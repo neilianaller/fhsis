@@ -5,7 +5,8 @@
         <ul class="navbar-nav">
             <li class="nav-item">
                 <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
-                    <i class="bi bi-list"></i>
+                    <i class="bi bi-list me-2"></i>
+                    <span id="toggleSpan"></span>
                 </a>
             </li>
         </ul>

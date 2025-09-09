@@ -9,16 +9,15 @@
     const collapsed = localStorage.getItem('sidebar-collapsed');
     if (collapsed === 'true') {
       $('body').removeClass('sidebar-open').addClass('sidebar-collapse');
+      $('#toggleSpan').text('Click to expand');
     }
 
     // Click handler for sidebar toggle button
     $('[data-lte-toggle="sidebar"]').on('click', function() {
-      // Wait a moment until AdminLTE applies the classes
 
       const isCollapsed = $('body').hasClass('sidebar-collapse');
-      console.log("Sidebar collapsed state:", isCollapsed);
       localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
-
+      $('#toggleSpan').text(isCollapsed ? 'Click to expand' : '');
     });
   });
 </script>
