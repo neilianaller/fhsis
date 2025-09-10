@@ -1,6 +1,5 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>FHSIS — Field Health Services Information System</title>
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('public/dist/assets/img/lguseal.png') ?>">
 
 
@@ -84,6 +83,10 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="<?= base_url('public/dist/plugins/fontawesome-free-7.0.1-web/css/all.min.css') ?>">
     <!-- Font Awesome -->
+
+    <!-- Datatables -->
+    <link href="<?= base_url('public/dist/plugins/datatables/datatables.min.css') ?>" rel="stylesheet">
+    <!-- Datatables -->
 
     <script data-cfasync="false" nonce="cda52b14-b0cb-4a77-bb1f-0f7cf2c810a6">
         try {
@@ -181,4 +184,38 @@
             throw fetch("/cdn-cgi/zaraz/t"), e;
         };
     </script>
+
+
+    <?php
+
+    function getCurrentPageName($withIcon = false)
+    {
+        $uri = uri_string();
+        switch ($uri) {
+            case 'dashboard':
+                return $withIcon
+                    ? '<i class="bi bi-table me-2"></i>Dashboard'
+                    : 'Dashboard';
+
+            case 'sections':
+                return $withIcon
+                    ? '<i class="bi bi-puzzle-fill me-2"></i>Sections'
+                    : 'Sections';
+
+            case 'famplanning':
+                return $withIcon
+                    ? '<i class="fas fa-people-group me-2"></i>A. Family Planning Services for Women of Reproductive Age'
+                    : 'A. Family Planning Services for Women of Reproductive Age';
+
+            default:
+                return $withIcon
+                    ? '<i class="bi bi-file-earmark me-2"></i>' . ucfirst($uri)
+                    : ucfirst($uri);
+        }
+    }
+
+    ?>
+
+    <title><?= getCurrentPageName(false) ?> — FHSIS</title>
+
 </head>

@@ -256,3 +256,8 @@
 <script src="<?= base_url('public/dist/plugins/sweetalert2/sweetalert2.js') ?>"></script>
 <script src="<?= base_url('public/dist/plugins/sweetalert2/sweetalert2.min.js') ?>"></script>
 <!-- SweetAlert2 -->
+
+<!-- Datatables -->
+<link href="<?= base_url('public/dist/plugins/datatables/datatables.min.css') ?>" rel="stylesheet">
+<script src="<?= base_url('public/dist/plugins/datatables/datatables.min.js') ?>"></script>
+<!-- Datatables -->

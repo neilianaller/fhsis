@@ -9,6 +9,13 @@
                     <span id="toggleSpan"></span>
                 </a>
             </li>
+
+
+            <li class="nav-item">
+                <span class="nav-link text-bold">
+                    <?= getCurrentPageName(true) ?>
+                </span>
+            </li>
         </ul>
         <!--end::Start Navbar Links-->
 
@@ -60,7 +67,7 @@
                 data-accordion="false"
                 id="navigation">
                 <li class="nav-item">
-                    <a href="<?= base_url('dashboard')?>" class="nav-link <?= (uri_string() == 'dashboard') ? 'active' : '' ?>">
+                    <a href="<?= base_url('dashboard') ?>" class="nav-link <?= (uri_string() == 'dashboard') ? 'active' : '' ?>">
                         <i class="nav-icon bi bi-table"></i>
                         <p>
                             Dashboard
@@ -68,65 +75,105 @@
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-people-group"></i>
+                <?php
+                $uri = uri_string();
+                $addEntryPages = ['famplanning', 'maternal', 'child', 'oral', 'ncd', 'environmental', 'infectious'];
+
+                $isAddEntryActive = in_array($uri, $addEntryPages);
+                ?>
+
+                <li class="nav-item <?= $isAddEntryActive ? 'menu-open' : '' ?>">
+                    <a href="#" class="nav-link <?= $isAddEntryActive ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-database-add"></i>
                         <p>
-                            A. Family Planning
+                            Add Entry
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+
+                    <ul class="ps-3 nav nav-treeview">
+
+                        <li class="nav-item">
+                            <a href="<?= base_url('famplanning') ?>" class="nav-link <?= (uri_string() == 'famplanning') ? 'active' : '' ?>">
+                                <i class="nav-icon fas fa-people-group"></i>
+                                <p>
+                                    A. Family Planning
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-person-pregnant"></i>
+                                <p>
+                                    B. Maternal
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-child-reaching"></i>
+                                <p>
+                                    C. Child
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-tooth"></i>
+                                <p>
+                                    D. Oral
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-virus"></i>
+                                <p>
+                                    E. Non-Commun Diseases
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-seedling"></i>
+                                <p>
+                                    F. Environmental
+                                </p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-bacterium"></i>
+                                <p>
+                                    G. Infectious Diseases
+                                </p>
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= base_url('sections') ?>" class="nav-link <?= (uri_string() == 'sections') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-puzzle-fill"></i>
+                        <p>
+                            Sections
                         </p>
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-person-pregnant"></i>
+                        <i class="nav-icon fas fa-print"></i>
                         <p>
-                            B. Maternal
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-child-reaching"></i>
-                        <p>
-                            C. Child
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-tooth"></i>
-                        <p>
-                            D. Oral
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-virus"></i>
-                        <p>
-                            E. Non-Communicable Diseases
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-seedling"></i>
-                        <p>
-                            F. Environmental
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-bacterium"></i>
-                        <p>
-                            G. Infectious Diseases
+                            Generate Report
                         </p>
                     </a>
                 </li>

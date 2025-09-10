@@ -12,7 +12,7 @@
 <div class="app-content">
 
     <div class="container-fluid">
-HI
+
     </div>
 
 </div>
