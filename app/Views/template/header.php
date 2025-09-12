@@ -192,6 +192,12 @@
     {
         $uri = uri_string();
         switch ($uri) {
+            
+            case '':
+                return $withIcon
+                    ? '<i class="bi bi-table me-2"></i>Dashboard'
+                    : 'Dashboard';
+
             case 'dashboard':
                 return $withIcon
                     ? '<i class="bi bi-table me-2"></i>Dashboard'

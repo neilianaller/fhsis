@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class IndicatorsModel extends Model
+class CategoriesModel extends Model
 {
-    protected $table            = 'indicators';
+    protected $table            = 'categories';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
@@ -17,7 +17,6 @@ class IndicatorsModel extends Model
         'id',
         'code',
         'name',
-        'category_id',
         'subsection_id',
         'section_code'
     ];

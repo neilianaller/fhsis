@@ -7,14 +7,14 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\HTTP\Response;
 use CodeIgniter\RESTful\ResourceController;
 
-class SectionsController extends ResourceController
+class IndicatorsController extends ResourceController
 {
     public function index(): string
     {
 
-        $SectionsModel = new \App\Models\SectionsModel();
+        $IndicatorsModel = new \App\Models\IndicatorsModel();
 
-        $sections = $SectionsModel->findAll();
+        $sections = $IndicatorsModel->findAll();
 
 
         return view('pages/sections', [
@@ -24,42 +24,16 @@ class SectionsController extends ResourceController
 
     public function show($id = null)
     {
-        $sectionsModel = new \App\Models\SectionsModel();
-        $subsectionsModel = new \App\Models\SubSectionsModel();
-        $categoriesModel = new \App\Models\CategoriesModel();
+
         $indicatorsModel = new \App\Models\IndicatorsModel();
+        $result = $indicatorsModel->find($id);
 
-        $section = $sectionsModel->find($id);
-
-        if (!$section) {
+        if (!$result) {
             return $this->response->setStatusCode(Response::HTTP_NOT_FOUND);
         }
 
-        // Fetch subsections
-        $subsections = $subsectionsModel->where('section_code', $section['code'])->findAll();
-
-        foreach ($subsections as &$sub) {
-            // Categories under this subsection
-            $categories = $categoriesModel->where('subsection_id', $sub['id'])->findAll();
-
-            foreach ($categories as &$cat) {
-                $cat['indicators'] = $indicatorsModel->where('category_id', $cat['id'])->findAll();
-            }
-
-            // Indicators directly under subsection (no category)
-            $sub['indicators'] = $indicatorsModel
-                ->where('subsection_id', $sub['id'])
-                ->where('category_id', null)
-                ->findAll();
-
-            $sub['categories'] = $categories;
-        }
-
-        $section['subsections'] = $subsections;
-
-        return $this->response->setStatusCode(Response::HTTP_OK)->setJSON($section);
+        return $this->response->setStatusCode(Response::HTTP_OK)->setJSON($result);
     }
-
 
     /**
      * @var IncomingRequest
@@ -68,7 +42,7 @@ class SectionsController extends ResourceController
 
     public function sectionsList()
     {
-        $SectionsModel = new \App\Models\SectionsModel();
+        $IndicatorsModel = new \App\Models\IndicatorsModel();
         $postData = $this->request->getPost();
 
         $draw        = $postData['draw'];
@@ -80,7 +54,7 @@ class SectionsController extends ResourceController
         $sortcolumn  = $postData['columns'][$sortby]['data'];
 
         //records
-        $records = $SectionsModel->select('*')
+        $records = $IndicatorsModel->select('*')
             ->like('id', $searchValue)
             ->orLike('name', $searchValue)
             ->orLike('code', $searchValue)
@@ -98,11 +72,11 @@ class SectionsController extends ResourceController
         }
 
         // total records 
-        $totalRecords = $SectionsModel->select('id')->countAllResults();
+        $totalRecords = $IndicatorsModel->select('id')->countAllResults();
 
         // total records with filter
 
-        $totalRecordswithFilter = $SectionsModel->select('id')
+        $totalRecordswithFilter = $IndicatorsModel->select('id')
             ->like('id', $searchValue)
             ->orLike('name', $searchValue)
             ->orLike('code', $searchValue)

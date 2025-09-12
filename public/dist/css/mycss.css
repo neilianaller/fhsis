@@ -1,4 +1,20 @@
-body
-{
+body {
     font-size: 14px;
+}
+
+#fpDatatable th {
+    vertical-align: middle;
+    background-color: #073763;
+    color: white;
+    /* ✅ centers vertically */
+}
+
+#fpDatatable td:nth-child(5),
+#fpDatatable td:nth-child(9),
+#fpDatatable td:nth-child(13),
+#fpDatatable td:nth-child(17),
+#fpDatatable td:nth-child(21),
+#fpDatatable td:nth-child(25) {
+    background-color: #6c757d;
+    /* light green */
 }

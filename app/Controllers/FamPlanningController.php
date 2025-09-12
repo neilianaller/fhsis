@@ -13,12 +13,14 @@ class FamPlanningController extends ResourceController
     {
 
         $BarangaysModel = new \App\Models\BarangaysModel();
+        $IndicatorsModel = new \App\Models\IndicatorsModel();
 
         $barangays = $BarangaysModel->findAll();
-
+        $fpIndicators = $IndicatorsModel->where('section_code', 'A')->findAll();
 
         return view('pages/famplanning', [
-            'barangays' => $barangays
+            'barangays' => $barangays,
+            'fpIndicators' => $fpIndicators
         ]);
     }
 }

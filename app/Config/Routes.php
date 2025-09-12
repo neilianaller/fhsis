@@ -8,11 +8,13 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->resource('dashboard', ['controller' => 'DashboardController']);
 $routes->resource('sections', ['controller' => 'SectionsController']);
-$routes->resource('indicator', ['controller' => 'SectionsController']);
+$routes->resource('subsections', ['controller' => 'SubSectionsController']);
+$routes->resource('categories', ['controller' => 'CategoriesController']);
+$routes->resource('indicators', ['controller' => 'IndicatorsController']);
 
 $routes->post('sectionsList', 'SectionsController::sectionsList');
 
-$routes->get('indicators/(:segment)', 'SectionsController::indicators/$1');
+$routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 
