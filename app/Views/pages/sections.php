@@ -137,69 +137,41 @@
                 section.subsections.forEach(sub => {
                     // Subsection card
                     html += `
-                <div class="card card-success card-outline mb-3">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">${sub.code}. ${sub.name}</h6>
-                    </div>
-                    <div class="card-body">
-            `;
+    <div class="card card-success card-outline mb-3">
+        <div class="card-header">
+            <h6 class="card-title mb-0">${sub.code}. ${sub.name}</h6>
+        </div>
+        <div class="card-body">
+    `;
 
                     // If has categories
                     if (sub.categories && sub.categories.length > 0) {
                         sub.categories.forEach(cat => {
                             html += `
-                        <div class="card card-primary card-outline mb-2">
-                            <div class="card-header py-2">
-                                <strong>${cat.code}. ${cat.name}</strong>
-                            </div>
-                            <div class="card-body p-2">
-                    `;
+            <div class="card card-primary card-outline mb-2 ms-3">
+                <div class="card-header py-2">
+                    <strong>${cat.code}. ${cat.name}</strong>
+                </div>
+                <div class="card-body p-2">
+            `;
 
-                            if (cat.indicators && cat.indicators.length > 0) {
+                            if (cat.indicators?.length > 0) {
                                 cat.indicators.forEach(ind => {
-                                    html += `
-                                <form class="updateIndicatorForm row mb-2 needs-validation" novalidate>
-                                    <input type="hidden" name="id" value="${ind.id}" />
-                                    <div class="col-md-2">
-                                        <input type="text" class="form-control form-control-sm" name="code" value="${ind.code}" required />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <input type="text" class="form-control form-control-sm" name="name" value="${ind.name}" required />
-                                    </div>
-                                    <div class="col-md-2">
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-save me-1"></i>Save
-                                        </button>
-                                    </div>
-                                </form>
-                            `;
+                                    html += renderIndicatorForm(ind);
                                 });
                             }
 
-                            html += `</div></div>`; // close cat card
+                            html += `</div></div>`; // close category card
                         });
                     }
 
                     // If no categories → render indicators directly under subsection
                     if (sub.indicators && sub.indicators.length > 0) {
+                        html += `<div class="ms-3">`;
                         sub.indicators.forEach(ind => {
-                            html += `
-                        <form class="updateIndicatorForm row mb-2 needs-validation" novalidate>
-                            <input type="hidden" name="id" value="${ind.id}" />
-                            <div class="col-md-2">
-                                <input type="text" class="form-control form-control-sm" name="code" value="${ind.code}" required />
-                            </div>
-                            <div class="col-md-8">
-                                <input type="text" class="form-control form-control-sm" name="name" value="${ind.name}" required />
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-save me-1"></i>Save
-                                </button>
-                            </div>
-                        </form>
-                    `;
+                            html += renderIndicatorForm(ind);
                         });
+                        html += `</div>`;
                     }
 
                     html += `</div></div>`; // close subsection card
@@ -210,6 +182,26 @@
         });
 
     });
+
+    function renderIndicatorForm(ind) {
+        return `
+    <form class="updateIndicatorForm row mb-2 needs-validation" novalidate>
+        <input type="hidden" name="id" value="${ind.id}" />
+        <div class="col-md-2">
+            <input type="text" class="form-control form-control-sm" name="code" value="${ind.code}" required />
+        </div>
+        <div class="col-md-8">
+            <input type="text" class="form-control form-control-sm" name="name" value="${ind.name}" required />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-sm btn-success">
+                <i class="fas fa-save me-1"></i>Save
+            </button>
+        </div>
+    </form>
+    `;
+    }
+
 
     // VALIDATION
     $(document).ready(function() {
@@ -322,7 +314,7 @@
 
             //create
             $.ajax({
-                url: "<?= base_url('indicator') ?>/" + formdata.id,
+                url: "<?= base_url('indicators') ?>/" + formdata.id,
                 type: "PUT",
                 data: jsondata,
                 success: function(response) {

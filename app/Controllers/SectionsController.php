@@ -49,7 +49,7 @@ class SectionsController extends ResourceController
             // Indicators directly under subsection (no category)
             $sub['indicators'] = $indicatorsModel
                 ->where('subsection_id', $sub['id'])
-                ->where('category_id', null)
+                ->where('category_id', '')
                 ->findAll();
 
             $sub['categories'] = $categories;
