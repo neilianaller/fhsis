@@ -27,7 +27,7 @@
 
                                 <div class="form-group">
 
-                                    <select class="form-select btn btn-success dropdown-toggle">
+                                    <select id="yearSelect" class="form-select btn btn-success dropdown-toggle">
                                         <?php
                                         $currentYear = date('Y');
                                         for ($year = $currentYear; $year >= 2020; $year--) {
@@ -45,7 +45,7 @@
 
                                 <div class="form-group">
 
-                                    <select class="form-select btn btn-success dropdown-toggle">
+                                    <select id="monthSelect" class="form-select btn btn-success dropdown-toggle">
                                         <option value="1">January</option>
                                         <option value="2">February</option>
                                         <option value="3">March</option>
@@ -69,7 +69,7 @@
 
                                 <div class="form-group">
 
-                                    <select class="form-select btn btn-primary dropdown-toggle">
+                                    <select id="barangaySelect" class="form-select btn btn-primary dropdown-toggle">
                                         <?php foreach ($barangays as $barangay): ?>
                                             <option value="<?= $barangay['code']; ?>">
                                                 <?= $barangay['name']; ?>
@@ -104,79 +104,84 @@
 
             <div class="col-md-12">
 
-                <div class="col-md-12">
+                <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
+                    <thead>
+                        <tr>
+                            <th rowspan="4">Modern FP Methods</th>
+                            <th colspan="4" rowspan="2">Current Users (Beginning of the Month)</th>
+                            <th colspan="8">Acceptors</th>
+                            <th colspan="4" rowspan="2">Drop-outs (Present Month)</th>
+                            <th colspan="4" rowspan="2">Current User (End of the Month)</th>
+                            <th colspan="4" rowspan="2">New Acceptors (Present Month)</th>
+                        </tr>
+                        <tr>
+                            <th colspan="4">New Acceptors (Previous Month)</th>
+                            <th colspan="4">Other Acceptors (Present Month)</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2" class="bg-secondary">TOTAL</th>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2">TOTAL</th>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2">TOTAL</th>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2">TOTAL</th>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2">TOTAL</th>
+                            <th colspan="3">Age Group</th>
+                            <th rowspan="2">TOTAL</th>
+                        </tr>
+                        <tr>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                            <th>10-14</th>
+                            <th>15-19</th>
+                            <th>20-49</th>
+                        </tr>
+                    <tbody>
+                        <?php foreach ($fpIndicators as $fpIndicator): ?>
+                            <tr>
+                                <td><?= $fpIndicator['name'] ?></td>
+                                <?php for ($i = 0; $i < 24; $i++): ?>
+                                    <?php if (($i + 1) % 4 === 0): ?>
+                                        <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                    <?php else: ?>
+                                        <td><input
+                                                type="number"
+                                                class="form-control form-control-sm entry-value"
+                                                data-indicator-id="<?= $fpIndicator['id'] ?>"
+                                                data-column="<?= $i ?>" /></td>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
 
-                    <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
-                        <thead>
-                            <tr>
-                                <th rowspan="4">Modern FP Methods</th>
-                                <th colspan="4" rowspan="2">Current Users (Beginning of the Month)</th>
-                                <th colspan="8">Acceptors</th>
-                                <th colspan="4" rowspan="2">Drop-outs (Present Month)</th>
-                                <th colspan="4" rowspan="2">Current User (End of the Month)</th>
-                                <th colspan="4" rowspan="2">New Acceptors (Present Month)</th>
                             </tr>
-                            <tr>
-                                <th colspan="4">New Acceptors (Previous Month)</th>
-                                <th colspan="4">Other Acceptors (Present Month)</th>
-                            </tr>
-                            <tr>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2" class="bg-secondary">TOTAL</th>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2">TOTAL</th>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2">TOTAL</th>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2">TOTAL</th>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2">TOTAL</th>
-                                <th colspan="3">Age Group</th>
-                                <th rowspan="2">TOTAL</th>
-                            </tr>
-                            <tr>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                                <th>10-14</th>
-                                <th>15-19</th>
-                                <th>20-49</th>
-                            </tr>
-                        <tbody>
-                            <?php foreach ($fpIndicators as $fpIndicator): ?>
-                                <tr>
-                                    <td><?= $fpIndicator['name'] ?></td>
-                                    <?php for ($i = 0; $i < 24; $i++): ?>
-                                        <?php if (($i + 1) % 4 === 0): ?>
-                                            <td><input type="number" readonly class="form-control form-control-sm"></td>
-                                        <?php else: ?>
-                                            <td><input type="number" class="form-control form-control-sm"></td>
-                                        <?php endif; ?>
-                                    <?php endfor; ?>
-
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                        </thead>
-                    </table>
-
-                </div>
+                        <?php endforeach; ?>
+                    </tbody>
+                    </thead>
+                </table>
 
             </div>
 
+            <div class="col-md-12">
+                <button id="saveEntries" class="btn btn-success w-100">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
 
+            </div>
         </div>
 
     </div>
@@ -193,6 +198,58 @@
 
 <?= $this->section('javascripts') ?>
 <script>
+    $(document).on("input", ".entry-value", function() {
+        let row = $(this).closest("tr");
+        row.find("td input[readonly]").each(function() {
+            let sum = 0;
+            row.find("td input:not([readonly])").each(function() {
+                sum += Number($(this).val() || 0);
+            });
+            $(this).val(sum);
+        });
+    });
 
+    $('#saveEntries').on('click', function() {
+        let entries = [];
+
+        $('.entry-value').each(function() {
+            let value = $(this).val();
+            if (value !== '') {
+                entries.push({
+                    indicator_id: $(this).data('indicator-id'),
+                    barangay_code: $('#barangaySelect').val(),
+                    report_month: $('#monthSelect').val(),
+                    report_year: $('#yearSelect').val(),
+                    column_index: $(this).data('column'),
+                    value: value
+                });
+            }
+        });
+
+        $.ajax({
+            url: "<?= base_url('addEntry') ?>", // adjust route
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                entries: entries
+            }),
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON ? xhr.responseJSON.message : 'Something went wrong'
+                });
+            }
+        });
+    });
 </script>
 <?= $this->endSection() ?>

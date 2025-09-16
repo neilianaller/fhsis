@@ -14,6 +14,8 @@ $routes->resource('indicators', ['controller' => 'IndicatorsController']);
 
 $routes->post('sectionsList', 'SectionsController::sectionsList');
 
+$routes->post('addEntry', 'FamPlanningController::addEntry');
+
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
