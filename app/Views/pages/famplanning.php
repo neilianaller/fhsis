@@ -22,7 +22,7 @@
                     </span>
 
                     <div class="info-box-content">
-                        <span class="info-box-text fs-4 fw-bold">A. Family Planning Services for Women of Reproductive Age</span>
+                        <span class="info-box-text fs-4 fw-bold">A. Family Planning Services for Women of Reproductive Age — </span>
                     </div>
                     <!-- /.info-box-content -->
                 </div>
@@ -31,67 +31,358 @@
 
         </div>
 
-        <div class="row mb-2">
+        <form class="needs-validation" novalidate>
 
-            <div class="col-3">
+            <div class="row mb-2">
 
-                <div class="card card-success card-outline">
+                <div class="col-12">
 
-                    <div class="card-body">
+                    <div class="card card-success card-outline">
 
-                        <div class="row mb-2">
+                        <div class="card-body">
 
-                            <div class="form-group">
+                            <div class="row">
 
-                                <select id="yearSelect" class="form-select btn btn-success dropdown-toggle">
-                                    <?php
-                                    $currentYear = date('Y');
-                                    for ($year = $currentYear; $year >= 2025; $year--) {
-                                        $selected = ($year == $currentYear) ? 'selected' : '';
-                                        echo '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
-                                    }
-                                    ?>
-                                </select>
+                                <div class="col-2">
+
+                                    <div class="form-group">
+
+                                        <select id="report_year" name="report_year" class="form-select btn btn-success dropdown-toggle">
+                                            <?php
+                                            $currentYear = date('Y');
+                                            for ($year = $currentYear; $year >= 2025; $year--) {
+                                                $selected = ($year == $currentYear) ? 'selected' : '';
+                                                echo '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
+                                            }
+                                            ?>
+                                        </select>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-3">
+
+                                    <div class="form-group">
+
+                                        <select id="report_month" name="report_month" class="form-select btn btn-success dropdown-toggle">
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+
+                                        </select>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-7">
+
+                                    <div class="form-group">
+
+                                        <select id="barangay_code" name="barangay_code" class="form-select btn btn-primary dropdown-toggle">
+                                            <?php foreach ($barangays as $barangay): ?>
+                                                <option value="<?= $barangay['code']; ?>">
+                                                    <?= $barangay['name']; ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+
+                                    </div>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                        <div class="row mb-2">
+                    </div>
 
-                            <div class="form-group">
+                </div>
 
-                                <select id="monthSelect" class="form-select btn btn-success dropdown-toggle">
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
+                <div class="col-12">
 
-                                </select>
+                    <div class="card card-success card-outline">
+
+                        <div class="card-body">
+
+                            <div class="row mb-2">
+
+                                <div class="form-group">
+
+                                    <select id="indicator_id" name="indicator_id" class="form-select btn btn-success dropdown-toggle">
+                                        <?php foreach ($fpIndicators as $indicator): ?>
+                                            <option value="<?= $indicator['id']; ?>">
+                                                <?= $indicator['name']; ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                </div>
 
                             </div>
 
-                        </div>
+                            <div class="row mb-2">
 
-                        <div class="row mb-2">
+                                <!-- CURRENT USERS (BEGINNING MONTH) -->
+                                <div class="col-4">
 
-                            <div class="form-group">
+                                    <div class="card">
 
-                                <select id="barangaySelect" class="form-select btn btn-primary dropdown-toggle">
-                                    <?php foreach ($barangays as $barangay): ?>
-                                        <option value="<?= $barangay['code']; ?>">
-                                            <?= $barangay['name']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                        <div class="card-header text-center fw-bold">
+                                            Current Users (Beginning of the Month)
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <td class="fw-bold">TOTAL</td>
+                                                    <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- ACCEPTORS -->
+                                <div class="col-8">
+
+                                    <div class="card">
+
+                                        <div class="card-header text-center fw-bold">
+                                            Acceptors
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <div class="row">
+
+                                                <div class="col-6">
+
+                                                    <table class="table table-bordered text-center">
+                                                        <thead>
+                                                            <td class="fw-bold" colspan="2">New Acceptors (Previous Month)</td>
+                                                        </thead>
+                                                        <thead>
+                                                            <td>Age Group</td>
+                                                            <td></td>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>10-14</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>15-19</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>20-49</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <td class="fw-bold">TOTAL</td>
+                                                            <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                        </tfoot>
+                                                    </table>
+
+                                                </div>
+
+                                                <div class="col-6">
+
+                                                    <table class="table table-bordered text-center">
+                                                        <thead>
+                                                            <td class="fw-bold" colspan="2">Other Acceptors (Present Month)</td>
+                                                        </thead>
+                                                        <thead>
+                                                            <td>Age Group</td>
+                                                            <td></td>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>10-14</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value" /></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>15-19</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>20-49</td>
+                                                                <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <td class="fw-bold">TOTAL</td>
+                                                            <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                        </tfoot>
+                                                    </table>
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="row mb-2">
+
+                                <!-- DROP OUTS -->
+                                <div class="col-4">
+
+                                    <div class="card">
+
+                                        <div class="card-header text-center fw-bold">
+                                            Drop-outs (Present Month)
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <td class="fw-bold">TOTAL</td>
+                                                    <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- CURRENT USER (END OF THE MONTH) -->
+                                <div class="col-4">
+
+                                    <div class="card">
+
+                                        <div class="card-header text-center fw-bold">
+                                            Current User (End of the Month)
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <td class="fw-bold">TOTAL</td>
+                                                    <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- NEW ACCEPTORS (PRESENT MONTH) -->
+                                <div class="col-4">
+
+                                    <div class="card">
+
+                                        <div class="card-header text-center fw-bold">
+                                            New Acceptors (End of the Month)
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value" /></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control form-control-sm entry-value"/></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <td class="fw-bold">TOTAL</td>
+                                                    <td><input type="number" readonly class="form-control form-control-sm"></td>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+                                    </div>
+
+                                </div>
 
                             </div>
 
@@ -103,47 +394,11 @@
 
             </div>
 
-            <div class="col-9">
+            <div class="row">
 
-                <div class="card card-success card-outline">
+                <div class="col-md-12">
 
-                    <div class="card-body">
-
-                        <div class="row mb-2">
-
-                            <div class="form-group">
-
-                                <label for="indicator">Select Indicator</label>
-
-                                <select id="indicator" class="form-select btn btn-success dropdown-toggle">
-                                    <?php foreach ($fpIndicators as $indicator): ?>
-                                        <option value="<?= $indicator['id']; ?>">
-                                            <?= $indicator['name']; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-
-                            </div>
-
-                        </div>
-
-                        <div class="row mb-2">
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="row">
-
-            <div class="col-md-12">
-
-                <!-- <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
+                    <!-- <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
                     <thead>
                         <tr>
                             <th rowspan="4">Modern FP Methods</th>
@@ -213,15 +468,17 @@
                     </thead>
                 </table> -->
 
+                </div>
+
+                <div class="col-md-12">
+                    <button id="saveEntries" class="btn btn-success w-100">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+
+                </div>
             </div>
 
-            <div class="col-md-12">
-                <button id="saveEntries" class="btn btn-success w-100">
-                    <i class="fas fa-save me-1"></i> Save
-                </button>
-
-            </div>
-        </div>
+        </form>
 
     </div>
 
