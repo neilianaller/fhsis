@@ -13,82 +13,121 @@
 
     <div class="container-fluid">
 
-        <div class="row mb-2">
+        <div class="row">
 
             <div class="col-12">
+                <div class="info-box bg-primary text-white">
+                    <span class="info-box-icon">
+                        <i class="fas fa-people-group"></i>
+                    </span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text fs-4 fw-bold">A. Family Planning Services for Women of Reproductive Age</span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+
+        </div>
+
+        <div class="row mb-2">
+
+            <div class="col-3">
 
                 <div class="card card-success card-outline">
 
                     <div class="card-body">
 
-                        <div class="row">
+                        <div class="row mb-2">
 
-                            <div class="col-2">
+                            <div class="form-group">
 
-                                <div class="form-group">
-
-                                    <select id="yearSelect" class="form-select btn btn-success dropdown-toggle">
-                                        <?php
-                                        $currentYear = date('Y');
-                                        for ($year = $currentYear; $year >= 2020; $year--) {
-                                            $selected = ($year == $currentYear) ? 'selected' : '';
-                                            echo '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
-                                        }
-                                        ?>
-                                    </select>
-
-                                </div>
+                                <select id="yearSelect" class="form-select btn btn-success dropdown-toggle">
+                                    <?php
+                                    $currentYear = date('Y');
+                                    for ($year = $currentYear; $year >= 2025; $year--) {
+                                        $selected = ($year == $currentYear) ? 'selected' : '';
+                                        echo '<option value="' . $year . '" ' . $selected . '>' . $year . '</option>';
+                                    }
+                                    ?>
+                                </select>
 
                             </div>
 
-                            <div class="col-3">
+                        </div>
 
-                                <div class="form-group">
+                        <div class="row mb-2">
 
-                                    <select id="monthSelect" class="form-select btn btn-success dropdown-toggle">
-                                        <option value="1">January</option>
-                                        <option value="2">February</option>
-                                        <option value="3">March</option>
-                                        <option value="4">April</option>
-                                        <option value="5">May</option>
-                                        <option value="6">June</option>
-                                        <option value="7">July</option>
-                                        <option value="8">August</option>
-                                        <option value="9">September</option>
-                                        <option value="10">October</option>
-                                        <option value="11">November</option>
-                                        <option value="12">December</option>
+                            <div class="form-group">
 
-                                    </select>
+                                <select id="monthSelect" class="form-select btn btn-success dropdown-toggle">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
 
-                                </div>
-
-                            </div>
-
-                            <div class="col-4">
-
-                                <div class="form-group">
-
-                                    <select id="barangaySelect" class="form-select btn btn-primary dropdown-toggle">
-                                        <?php foreach ($barangays as $barangay): ?>
-                                            <option value="<?= $barangay['code']; ?>">
-                                                <?= $barangay['name']; ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-
-                                </div>
+                                </select>
 
                             </div>
 
-                            <div class="col-3">
+                        </div>
 
-                                <div class="form-group">
+                        <div class="row mb-2">
 
-                                    <button type="button" class="btn btn-warning"><i class="bi bi-arrow-clockwise me-2"></i>Load Results</button>
-                                </div>
+                            <div class="form-group">
+
+                                <select id="barangaySelect" class="form-select btn btn-primary dropdown-toggle">
+                                    <?php foreach ($barangays as $barangay): ?>
+                                        <option value="<?= $barangay['code']; ?>">
+                                            <?= $barangay['name']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
 
                             </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-9">
+
+                <div class="card card-success card-outline">
+
+                    <div class="card-body">
+
+                        <div class="row mb-2">
+
+                            <div class="form-group">
+
+                                <label for="indicator">Select Indicator</label>
+
+                                <select id="indicator" class="form-select btn btn-success dropdown-toggle">
+                                    <?php foreach ($fpIndicators as $indicator): ?>
+                                        <option value="<?= $indicator['id']; ?>">
+                                            <?= $indicator['name']; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-2">
 
                         </div>
 
@@ -104,7 +143,7 @@
 
             <div class="col-md-12">
 
-                <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
+                <!-- <table id="fpDatatable" class="table table-striped table-hover align-middle text-center">
                     <thead>
                         <tr>
                             <th rowspan="4">Modern FP Methods</th>
@@ -172,7 +211,7 @@
                         <?php endforeach; ?>
                     </tbody>
                     </thead>
-                </table>
+                </table> -->
 
             </div>
 

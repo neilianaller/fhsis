@@ -210,7 +210,7 @@
 
             case 'famplanning':
                 return $withIcon
-                    ? '<i class="fas fa-people-group me-2"></i>A. Family Planning Services for Women of Reproductive Age'
+                    ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
                     : 'ENTRY — A. Family Planning Services for Women of Reproductive Age';
 
             default:
