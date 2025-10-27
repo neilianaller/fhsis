@@ -32,57 +32,37 @@ class FamPlanningController extends ResourceController
      */
     protected $request;
 
-    public function addEntry()
+    public function save()
     {
-        $entriesModel = new \App\Models\EntriesModel();
-        $data = $this->request->getJSON(true);
+        $model = new \App\Models\EntriesFPModel();
 
-        if (!$data || !isset($data['entries'])) {
-            return $this->response->setStatusCode(400)->setJSON([
-                'status' => 'error',
-                'message' => 'Invalid request payload.'
+        $barangay = $this->request->getPost('barangay_code');
+        $month = $this->request->getPost('report_month');
+        $year = $this->request->getPost('report_year');
+        $userType = $this->request->getPost('user_type');
+        $entries = $this->request->getPost('entries');
+
+        if (!$entries || !is_array($entries)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid data format.']);
+        }
+
+        foreach ($entries as $entry) {
+            $model->insert([
+                'indicator_id'  => null, // optional if not needed
+                'barangay_code' => $barangay,
+                'report_month'  => $month,
+                'report_year'   => $year,
+                'agegroup'      => $entry['agegroup'],
+                'user_type'     => $userType,
+                'value'         => $entry['value'],
+                'created_at'    => date('Y-m-d H:i:s'),
+                'updated_at'    => date('Y-m-d H:i:s'),
             ]);
         }
 
-        foreach ($data['entries'] as $entry) {
-            // Expected fields from frontend
-            $indicatorId = $entry['indicator_id'];
-            $barangayCode = $entry['barangay_code'];
-            $reportMonth = $entry['report_month'];
-            $reportYear = $entry['report_year'];
-            // $columnIndex = $entry['column_index'];
-            $value = $entry['value'];
-
-            // Upsert: check if entry exists
-            $existing = $entriesModel->where([
-                'indicator_id' => $indicatorId,
-                'barangay_code' => $barangayCode,
-                'report_month' => $reportMonth,
-                'report_year' => $reportYear,
-                // 'column_index' => $columnIndex,
-            ])->first();
-
-            if ($existing) {
-                // Update existing
-                $entriesModel->update($existing['id'], [
-                    'value' => $value
-                ]);
-            } else {
-                // Insert new
-                $entriesModel->insert([
-                    'indicator_id' => $indicatorId,
-                    'barangay_code' => $barangayCode,
-                    'report_month' => $reportMonth,
-                    'report_year' => $reportYear,
-                    // 'column_index' => $columnIndex,
-                    'value' => $value
-                ]);
-            }
-        }
-
-        return $this->response->setStatusCode(200)->setJSON([
+        return $this->response->setJSON([
             'status' => 'success',
-            'message' => 'Entries saved successfully.'
+            'message' => 'Entries successfully saved!'
         ]);
     }
 }

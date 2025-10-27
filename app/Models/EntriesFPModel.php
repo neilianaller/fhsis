@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class EntriesModel extends Model
+class EntriesFPModel extends Model
 {
-    protected $table            = 'entries';
+    protected $table            = 'entries_fp';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
@@ -19,6 +19,8 @@ class EntriesModel extends Model
         'barangay_code',
         'report_month',
         'report_year',
+        'agegroup',
+        'user_type',
         'value',
         'created_at',
         'updated_at',
