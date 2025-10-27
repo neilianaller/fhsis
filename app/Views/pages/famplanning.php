@@ -22,7 +22,7 @@
                     </span>
 
                     <div class="info-box-content">
-                        <span class="info-box-text fs-4 fw-bold">A. Family Planning Services for Women of Reproductive Age — </span>
+                        <span class="info-box-text fs-4 fw-bold">A. Family Planning Services for Women of Reproductive Age</span>
                     </div>
                     <!-- /.info-box-content -->
                 </div>
@@ -196,7 +196,7 @@
 
                                             <div class="col-6">
 
-                                                <form class="card needs-validation entriesForm" novalidate>
+                                                <form class="card needs-validation entriesForm" data-user-type="new_acceptor_previous" novalidate>
 
                                                     <table class="table table-bordered text-center">
                                                         <thead>
@@ -209,15 +209,15 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td>10-14</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="new_acceptor_previous"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>15-19</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="new_acceptor_previous"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>20-49</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="new_acceptor_previous"></td>
                                                             </tr>
                                                         </tbody>
                                                         <tfoot>
@@ -241,7 +241,7 @@
 
                                             <div class="col-6">
 
-                                                <form class="card needs-validation entriesForm" novalidate>
+                                                <form class="card needs-validation entriesForm" data-user-type="other_acceptor_present" novalidate>
 
                                                     <table class="table table-bordered text-center">
                                                         <thead>
@@ -254,15 +254,15 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td>10-14</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="other_acceptor_present"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>15-19</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="other_acceptor_present"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>20-49</td>
-                                                                <td><input type="number" required class="form-control" /></td>
+                                                                <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="other_acceptor_present"></td>
                                                             </tr>
                                                         </tbody>
                                                         <tfoot>
@@ -301,47 +301,52 @@
 
                                 <div class="card">
 
-                                    <div class="card-header text-center fw-bold">
-                                        Drop-outs (Present Month)
-                                    </div>
+                                    <form class="card needs-validation entriesForm" data-user-type="drop_outs" novalidate>
 
-                                    <div class="card-body">
+                                        <div class="card-header text-center fw-bold">
+                                            Drop-outs (Present Month)
+                                        </div>
 
-                                        <table class="table table-bordered text-center">
-                                            <thead>
-                                                <td>Age Group</td>
-                                                <td></td>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>10-14</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>15-19</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>20-49</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="2">
-                                                        <button type="submit" class="btn btn-success w-100">
-                                                            <i class="fas fa-save me-1"></i> Save
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                                        <div class="card-body">
 
-                                    </div>
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="drop_outs"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="drop_outs"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="drop_outs"></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td class="fw-bold">TOTAL</td>
+                                                        <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <button type="submit" class="btn btn-success w-100">
+                                                                <i class="fas fa-save me-1"></i> Save
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+
+                                    </form>
+
                                 </div>
 
                             </div>
@@ -351,47 +356,52 @@
 
                                 <div class="card">
 
-                                    <div class="card-header text-center fw-bold">
-                                        Current User (End of the Month)
-                                    </div>
+                                    <form class="card needs-validation entriesForm" data-user-type="current_user_end" novalidate>
 
-                                    <div class="card-body">
+                                        <div class="card-header text-center fw-bold">
+                                            Current User (End of the Month)
+                                        </div>
 
-                                        <table class="table table-bordered text-center">
-                                            <thead>
-                                                <td>Age Group</td>
-                                                <td></td>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>10-14</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>15-19</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>20-49</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="2">
-                                                        <button type="submit" class="btn btn-success w-100">
-                                                            <i class="fas fa-save me-1"></i> Save
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                                        <div class="card-body">
 
-                                    </div>
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="current_user_end"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="current_user_end"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="current_user_end"></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td class="fw-bold">TOTAL</td>
+                                                        <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <button type="submit" class="btn btn-success w-100">
+                                                                <i class="fas fa-save me-1"></i> Save
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+
+                                    </form>
+
                                 </div>
 
                             </div>
@@ -401,47 +411,53 @@
 
                                 <div class="card">
 
-                                    <div class="card-header text-center fw-bold">
-                                        New Acceptors (End of the Month)
-                                    </div>
+                                    <form class="card needs-validation entriesForm" data-user-type="new_acceptor_present" novalidate>
 
-                                    <div class="card-body">
 
-                                        <table class="table table-bordered text-center">
-                                            <thead>
-                                                <td>Age Group</td>
-                                                <td></td>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>10-14</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>15-19</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>20-49</td>
-                                                    <td><input type="number" required class="form-control" /></td>
-                                                </tr>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="2">
-                                                        <button type="submit" class="btn btn-success w-100">
-                                                            <i class="fas fa-save me-1"></i> Save
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                                        <div class="card-header text-center fw-bold">
+                                            New Acceptors (End of the Month)
+                                        </div>
 
-                                    </div>
+                                        <div class="card-body">
+
+                                            <table class="table table-bordered text-center">
+                                                <thead>
+                                                    <td>Age Group</td>
+                                                    <td></td>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="new_acceptor_present"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="new_acceptor_present"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="new_acceptor_present"></td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td class="fw-bold">TOTAL</td>
+                                                        <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <button type="submit" class="btn btn-success w-100">
+                                                                <i class="fas fa-save me-1"></i> Save
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+
+                                        </div>
+
+                                    </form>
+
                                 </div>
 
                             </div>
@@ -546,12 +562,10 @@
 
         // Load entries when page loads or when dropdowns change
         function loadEntries() {
-            console.log("loadEntries initiated");
             const barangay = $('#barangay_code').val();
             const month = $('#report_month').val();
             const year = $('#report_year').val();
-
-            if (!barangay || !month || !year) return;
+            const indicator_id = $('#indicator_id').val();
 
             $.ajax({
                 url: "<?= base_url('get'); ?>",
@@ -559,14 +573,15 @@
                 data: {
                     barangay_code: barangay,
                     report_month: month,
-                    report_year: year
+                    report_year: year,
+                    indicator_id: indicator_id
                 },
                 success: function(response) {
                     if (response.status === 'success') {
                         const entries = response.data;
 
                         // Clear all current inputs first
-                        // $('table input[type="number"]:not([readonly])').val('');
+                        $('table input[type="number"]').val('');
 
                         // Populate values
                         entries.forEach(entry => {
@@ -594,7 +609,7 @@
 
         // Trigger load on page ready and on filter change
         loadEntries();
-        $('#barangay_code, #report_month, #report_year').change(loadEntries);
+        $('#barangay_code, #report_month, #report_year, #indicator_id').change(loadEntries);
 
         $('.entriesForm').on('submit', function(e) {
             e.preventDefault();

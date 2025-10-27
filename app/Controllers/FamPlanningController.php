@@ -34,38 +34,60 @@ class FamPlanningController extends ResourceController
 
     public function save()
     {
-        $model = new \App\Models\EntriesFPModel();
+        $entriesModel = new \App\Models\EntriesFPModel();
 
-        $barangay = $this->request->getPost('barangay_code');
-        $month = $this->request->getPost('report_month');
-        $year = $this->request->getPost('report_year');
-        $userType = $this->request->getPost('user_type');
-        $indicatorId = $this->request->getPost('indicatorId');
-        $entries = $this->request->getPost('entries');
+        $barangay_code = $this->request->getPost('barangay_code');
+        $report_month  = $this->request->getPost('report_month');
+        $report_year   = $this->request->getPost('report_year');
+        $user_type   = $this->request->getPost('user_type');
+        $indicatorId   = $this->request->getPost('indicatorId');
+        $entries       = $this->request->getPost('entries'); // array of { agegroup, user_type, value }
 
-        if (!$entries || !is_array($entries)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid data format.']);
+        if (!$barangay_code || !$report_month || !$report_year || !$entries) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Missing required data.'
+            ]);
         }
 
         foreach ($entries as $entry) {
-            $model->insert([
-                'indicator_id'  => $indicatorId, // optional if not needed
-                'barangay_code' => $barangay,
-                'report_month'  => $month,
-                'report_year'   => $year,
+            $existing = $entriesModel->where([
+                'barangay_code' => $barangay_code,
+                'report_month'  => $report_month,
+                'report_year'   => $report_year,
                 'agegroup'      => $entry['agegroup'],
-                'user_type'     => $userType,
-                'value'         => $entry['value'],
-                'created_at'    => date('Y-m-d H:i:s'),
-                'updated_at'    => date('Y-m-d H:i:s'),
-            ]);
+                'user_type'     => $user_type,
+                'indicator_id'     => $indicatorId
+            ])->first();
+
+            if ($existing) {
+                // Update existing record
+                $entriesModel->update($existing['id'], [
+                    'value'      => $entry['value'],
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                // Insert new record
+                $entriesModel->insert([
+                    'indicator_id' => $indicatorId,
+                    'barangay_code' => $barangay_code,
+                    'report_month'  => $report_month,
+                    'report_year'   => $report_year,
+                    'agegroup'      => $entry['agegroup'],
+                    'user_type'     => $user_type,
+                    'value'         => $entry['value'],
+                    'created_at'    => date('Y-m-d H:i:s'),
+                    'updated_at'    => date('Y-m-d H:i:s')
+                ]);
+            }
         }
 
         return $this->response->setJSON([
             'status' => 'success',
-            'message' => 'Entries successfully saved!'
+            'message' => 'Entries saved successfully.'
         ]);
     }
+
 
     public function get()
     {
@@ -74,6 +96,7 @@ class FamPlanningController extends ResourceController
         $barangayCode = $this->request->getGet('barangay_code');
         $reportMonth  = $this->request->getGet('report_month');
         $reportYear   = $this->request->getGet('report_year');
+        $indicator_id   = $this->request->getGet('indicator_id');
 
         // Simple validation
         if (!$barangayCode || !$reportMonth || !$reportYear) {
@@ -87,6 +110,7 @@ class FamPlanningController extends ResourceController
             ->where('barangay_code', $barangayCode)
             ->where('report_month', $reportMonth)
             ->where('report_year', $reportYear)
+            ->where('indicator_id', $indicator_id)
             ->findAll();
 
         return $this->response->setJSON([
