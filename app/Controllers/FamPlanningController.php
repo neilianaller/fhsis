@@ -40,6 +40,7 @@ class FamPlanningController extends ResourceController
         $month = $this->request->getPost('report_month');
         $year = $this->request->getPost('report_year');
         $userType = $this->request->getPost('user_type');
+        $indicatorId = $this->request->getPost('indicatorId');
         $entries = $this->request->getPost('entries');
 
         if (!$entries || !is_array($entries)) {
@@ -48,7 +49,7 @@ class FamPlanningController extends ResourceController
 
         foreach ($entries as $entry) {
             $model->insert([
-                'indicator_id'  => null, // optional if not needed
+                'indicator_id'  => $indicatorId, // optional if not needed
                 'barangay_code' => $barangay,
                 'report_month'  => $month,
                 'report_year'   => $year,
@@ -63,6 +64,34 @@ class FamPlanningController extends ResourceController
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Entries successfully saved!'
+        ]);
+    }
+
+    public function get()
+    {
+        $entriesModel = new \App\Models\EntriesFPModel();
+
+        $barangayCode = $this->request->getGet('barangay_code');
+        $reportMonth  = $this->request->getGet('report_month');
+        $reportYear   = $this->request->getGet('report_year');
+
+        // Simple validation
+        if (!$barangayCode || !$reportMonth || !$reportYear) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 'error',
+                'message' => 'Missing parameters.'
+            ]);
+        }
+
+        $entries = $entriesModel
+            ->where('barangay_code', $barangayCode)
+            ->where('report_month', $reportMonth)
+            ->where('report_year', $reportYear)
+            ->findAll();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data' => $entries
         ]);
     }
 }

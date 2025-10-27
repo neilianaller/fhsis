@@ -12,9 +12,12 @@ $routes->resource('subsections', ['controller' => 'SubSectionsController']);
 $routes->resource('categories', ['controller' => 'CategoriesController']);
 $routes->resource('indicators', ['controller' => 'IndicatorsController']);
 
+
 $routes->post('sectionsList', 'SectionsController::sectionsList');
 
 $routes->post('save', 'FamPlanningController::save');
+$routes->get('get', 'FamPlanningController::get');
+
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 

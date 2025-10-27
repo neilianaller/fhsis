@@ -134,7 +134,7 @@
                             <!-- CURRENT USERS (BEGINNING MONTH) -->
                             <div class="col-4">
 
-                                <form class="card needs-validation entriesForm" novalidate>
+                                <form class="card needs-validation entriesForm" data-user-type="current_user_beginning" novalidate>
 
                                     <div class="card-header text-center fw-bold">
                                         Current Users (Beginning of the Month)
@@ -150,20 +150,20 @@
                                             <tbody>
                                                 <tr>
                                                     <td>10-14</td>
-                                                    <td><input type="number" required class="form-control" /></td>
+                                                    <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="current_user_beginning"></td>
                                                 </tr>
                                                 <tr>
                                                     <td>15-19</td>
-                                                    <td><input type="number" required class="form-control" /></td>
+                                                    <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="current_user_beginning"></td>
                                                 </tr>
                                                 <tr>
                                                     <td>20-49</td>
-                                                    <td><input type="number" required class="form-control" /></td>
+                                                    <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="current_user_beginning"></td>
                                                 </tr>
                                             </tbody>
                                             <tfoot>
                                                 <td class="fw-bold">TOTAL</td>
-                                                <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
                                             </tfoot>
                                         </table>
 
@@ -223,7 +223,7 @@
                                                         <tfoot>
                                                             <tr>
                                                                 <td class="fw-bold">TOTAL</td>
-                                                                <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td colspan="2">
@@ -268,7 +268,7 @@
                                                         <tfoot>
                                                             <tr>
                                                                 <td class="fw-bold">TOTAL</td>
-                                                                <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
                                                             </tr>
                                                             <tr>
                                                                 <td colspan="2">
@@ -329,7 +329,7 @@
                                             <tfoot>
                                                 <tr>
                                                     <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">
@@ -379,7 +379,7 @@
                                             <tfoot>
                                                 <tr>
                                                     <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">
@@ -429,7 +429,7 @@
                                             <tfoot>
                                                 <tr>
                                                     <td class="fw-bold">TOTAL</td>
-                                                    <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                                    <td><input type="number" required readonly class="form-control fw-bold"></td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2">
@@ -514,7 +514,7 @@
                                 <td><?= $fpIndicator['name'] ?></td>
                                 <?php for ($i = 0; $i < 24; $i++): ?>
                                     <?php if (($i + 1) % 4 === 0): ?>
-                                        <td><input type="number" required readonly class="form-control form-control-sm"></td>
+                                        <td><input type="number" required readonly class="form-control fw-bold"></td>
                                     <?php else: ?>
                                         <td><input
                                                 type="number"
@@ -542,26 +542,69 @@
 
 <?= $this->section('javascripts') ?>
 <script>
-    $(document).on("input", ".entry-value", function() {
-        let row = $(this).closest("tr");
-        row.find("td input[readonly]").each(function() {
-            let sum = 0;
-            row.find("td input:not([readonly])").each(function() {
-                sum += Number($(this).val() || 0);
-            });
-            $(this).val(sum);
-        });
-    });
-
     $(document).ready(function() {
+
+        // Load entries when page loads or when dropdowns change
+        function loadEntries() {
+            console.log("loadEntries initiated");
+            const barangay = $('#barangay_code').val();
+            const month = $('#report_month').val();
+            const year = $('#report_year').val();
+
+            if (!barangay || !month || !year) return;
+
+            $.ajax({
+                url: "<?= base_url('get'); ?>",
+                method: "GET",
+                data: {
+                    barangay_code: barangay,
+                    report_month: month,
+                    report_year: year
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        const entries = response.data;
+
+                        // Clear all current inputs first
+                        // $('table input[type="number"]:not([readonly])').val('');
+
+                        // Populate values
+                        entries.forEach(entry => {
+                            // Find a matching input field
+                            // Example mapping logic:
+                            // You can refine this by adding data attributes like data-agegroup or data-user_type
+                            const table = $(`form[data-user-type="${entry.user_type}"]`);
+                            const input = table.find(`input[data-agegroup="${entry.agegroup}"]`);
+
+                            if (input.length) {
+                                input.val(entry.value);
+                                input.trigger('input'); // recalc total
+                            }
+                        });
+
+                    } else {
+                        console.warn(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Error loading entries", xhr.responseText);
+                }
+            });
+        }
+
+        // Trigger load on page ready and on filter change
+        loadEntries();
+        $('#barangay_code, #report_month, #report_year').change(loadEntries);
+
         $('.entriesForm').on('submit', function(e) {
             e.preventDefault();
 
             const form = $(this);
-            const userType = form.find('.card-header').text().trim().replace(/\s+/g, '_').toLowerCase();
+            const userType = form.data('user-type'); // 👈 gets the data-user-type value
             const barangay = $('#barangay_code').val();
             const month = $('#report_month').val();
             const year = $('#report_year').val();
+            const indicatorId = $('#indicator_id').val();
 
             const entries = [];
             form.find('tbody tr').each(function() {
@@ -573,43 +616,87 @@
                 });
             });
 
-            $.ajax({
-                url: "<?= base_url('save') ?>",
-                type: "POST",
-                dataType: "json",
-                data: {
-                    barangay_code: barangay,
-                    report_month: month,
-                    report_year: year,
-                    user_type: userType,
-                    entries: entries
-                },
-                success: function(response) {
-                    if (response.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Saved!',
-                            text: response.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else {
+            if (this.checkValidity()) {
+
+
+                $.ajax({
+                    url: "<?= base_url('save') ?>",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        barangay_code: barangay,
+                        report_month: month,
+                        report_year: year,
+                        user_type: userType,
+                        indicatorId: indicatorId,
+                        entries: entries
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Saved!',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            loadEntries();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error!',
-                            text: response.message
+                            title: 'Request Failed',
+                            text: error
                         });
                     }
-                },
-                error: function(xhr, status, error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Request Failed',
-                        text: error
-                    });
+                });
+            }
+        });
+    });
+
+    $(document).ready(function() {
+
+    });
+
+    // VALIDATION
+    $(document).ready(function() {
+        'use strict';
+        let form = $(".needs-validation");
+        form.each(function() {
+            $(this).on('submit', function(e) {
+                if (this.checkValidity() === false) {
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
+                $(this).addClass('was-validated');
             });
         });
+    });
+
+    $(document).ready(function() {
+
+        // When user types in any number input inside a table
+        $(document).on('input', 'table input[type="number"]:not([readonly])', function() {
+            const table = $(this).closest('table');
+            let total = 0;
+
+            // Sum all number inputs in the tbody
+            table.find('tbody input[type="number"]').each(function() {
+                const val = parseFloat($(this).val()) || 0;
+                total += val;
+            });
+
+            // Update the readonly TOTAL field in the same table
+            table.find('tfoot input[readonly]').val(total);
+        });
+
     });
 </script>
 <?= $this->endSection() ?>
