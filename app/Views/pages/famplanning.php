@@ -33,7 +33,7 @@
 
         <div class="row mb-2">
 
-            <div class="col-12">
+            <div class="col-12 mb-2">
 
                 <div class="card card-success card-outline">
 
@@ -120,7 +120,7 @@
                                 <select id="indicator_id" name="indicator_id" class="form-select btn btn-success dropdown-toggle">
                                     <?php foreach ($fpIndicators as $indicator): ?>
                                         <option value="<?= $indicator['id']; ?>">
-                                            <?= $indicator['name']; ?>
+                                            <?= $indicator['code'] . ". " . $indicator['name']; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -568,7 +568,7 @@
             const indicator_id = $('#indicator_id').val();
 
             $.ajax({
-                url: "<?= base_url('get'); ?>",
+                url: "<?= base_url('getFP'); ?>",
                 method: "GET",
                 data: {
                     barangay_code: barangay,
@@ -635,7 +635,7 @@
 
 
                 $.ajax({
-                    url: "<?= base_url('save') ?>",
+                    url: "<?= base_url('saveFP') ?>",
                     type: "POST",
                     dataType: "json",
                     data: {
@@ -674,10 +674,6 @@
                 });
             }
         });
-    });
-
-    $(document).ready(function() {
-
     });
 
     // VALIDATION

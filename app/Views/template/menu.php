@@ -103,7 +103,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="<?= base_url('maternal') ?>" class="nav-link <?= (uri_string() == 'maternal') ? 'active' : '' ?>">
                                 <i class="nav-icon fas fa-person-pregnant"></i>
                                 <p>
                                     B. Maternal

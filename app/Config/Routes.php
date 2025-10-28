@@ -15,13 +15,17 @@ $routes->resource('indicators', ['controller' => 'IndicatorsController']);
 
 $routes->post('sectionsList', 'SectionsController::sectionsList');
 
-$routes->post('save', 'FamPlanningController::save');
-$routes->get('get', 'FamPlanningController::get');
+$routes->post('saveFP', 'FamPlanningController::save');
+$routes->get('getFP', 'FamPlanningController::get');
+
+$routes->post('saveMaternal', 'MaternalController::save');
+$routes->get('getMaternal', 'MaternalController::get');
 
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
+$routes->resource('maternal', ['controller' => 'MaternalController']);
 
 
 service('auth')->routes($routes);
