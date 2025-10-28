@@ -21,11 +21,15 @@ $routes->get('getFP', 'FamPlanningController::get');
 $routes->post('saveMaternal', 'MaternalController::save');
 $routes->get('getMaternal', 'MaternalController::get');
 
+$routes->post('saveChild', 'ChildController::save');
+$routes->get('getChild', 'ChildController::get');
+
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 $routes->resource('maternal', ['controller' => 'MaternalController']);
+$routes->resource('child', ['controller' => 'ChildController']);
 
 
 service('auth')->routes($routes);

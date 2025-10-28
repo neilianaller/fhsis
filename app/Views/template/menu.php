@@ -112,7 +112,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="<?= base_url('child') ?>" class="nav-link <?= (uri_string() == 'child') ? 'active' : '' ?>">
                                 <i class="nav-icon fas fa-child-reaching"></i>
                                 <p>
                                     C. Child

@@ -218,6 +218,11 @@
                     ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
                     : 'ENTRY — B. Maternal Care and Services';
 
+            case 'child':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
+                    : 'ENTRY — C. Child Care and Services';
+
             default:
                 return $withIcon
                     ? '<i class="bi bi-file-earmark me-2"></i>' . ucfirst($uri)
