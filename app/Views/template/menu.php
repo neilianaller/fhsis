@@ -130,8 +130,8 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-virus"></i>
+                            <a href="<?= base_url('ncdisease') ?>" class="nav-link <?= (uri_string() == 'ncdisease') ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-virus2"></i>
                                 <p>
                                     E. Non-Commun Diseases
                                 </p>

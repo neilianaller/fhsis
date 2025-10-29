@@ -226,7 +226,12 @@
             case 'oral':
                 return $withIcon
                     ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
-                    : 'ENTRY — C. Oral Health Care Services';
+                    : 'ENTRY — D. Oral Health Care Services';
+
+            case 'ncdisease':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
+                    : 'ENTRY — E. Non-Communicable Diseases';
 
             default:
                 return $withIcon
