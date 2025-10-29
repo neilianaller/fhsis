@@ -18,7 +18,7 @@
             <div class="col-12">
                 <div class="info-box bg-primary text-white">
                     <span class="info-box-icon">
-                        <i class="fas fa-people-group"></i>
+                        <i class="bi bi-people-fill"></i>
                     </span>
 
                     <div class="info-box-content">
@@ -172,7 +172,7 @@
                                     <div class="card-footer">
 
                                         <button type="submit" class="btn btn-success w-100">
-                                            <i class="fas fa-save me-1"></i> Save
+                                            <i class="bi bi-save me-1"></i> Save
                                         </button>
 
                                     </div>
@@ -228,7 +228,7 @@
                                                             <tr>
                                                                 <td colspan="2">
                                                                     <button type="submit" class="btn btn-success w-100">
-                                                                        <i class="fas fa-save me-1"></i> Save
+                                                                        <i class="bi bi-save me-1"></i> Save
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -273,7 +273,7 @@
                                                             <tr>
                                                                 <td colspan="2">
                                                                     <button type="submit" class="btn btn-success w-100">
-                                                                        <i class="fas fa-save me-1"></i> Save
+                                                                        <i class="bi bi-save me-1"></i> Save
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -336,7 +336,7 @@
                                                     <tr>
                                                         <td colspan="2">
                                                             <button type="submit" class="btn btn-success w-100">
-                                                                <i class="fas fa-save me-1"></i> Save
+                                                                <i class="bi bi-save me-1"></i> Save
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -391,7 +391,7 @@
                                                     <tr>
                                                         <td colspan="2">
                                                             <button type="submit" class="btn btn-success w-100">
-                                                                <i class="fas fa-save me-1"></i> Save
+                                                                <i class="bi bi-save me-1"></i> Save
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -447,7 +447,7 @@
                                                     <tr>
                                                         <td colspan="2">
                                                             <button type="submit" class="btn btn-success w-100">
-                                                                <i class="fas fa-save me-1"></i> Save
+                                                                <i class="bi bi-save me-1"></i> Save
                                                             </button>
                                                         </td>
                                                     </tr>

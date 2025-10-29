@@ -95,7 +95,7 @@
 
                         <li class="nav-item">
                             <a href="<?= base_url('famplanning') ?>" class="nav-link <?= (uri_string() == 'famplanning') ? 'active' : '' ?>">
-                                <i class="nav-icon fas fa-people-group"></i>
+                                <i class="nav-icon bi bi-people"></i>
                                 <p>
                                     A. Family Planning
                                 </p>
@@ -113,7 +113,7 @@
 
                         <li class="nav-item">
                             <a href="<?= base_url('child') ?>" class="nav-link <?= (uri_string() == 'child') ? 'active' : '' ?>">
-                                <i class="nav-icon fas fa-child-reaching"></i>
+                                <i class="nav-icon bi bi-person-arms-up"></i>
                                 <p>
                                     C. Child
                                 </p>
@@ -121,7 +121,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="<?= base_url('oral') ?>" class="nav-link <?= (uri_string() == 'oral') ? 'active' : '' ?>">
                                 <i class="nav-icon fas fa-tooth"></i>
                                 <p>
                                     D. Oral
@@ -131,7 +131,7 @@
 
                         <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-virus"></i>
+                                <i class="nav-icon bi bi-virus"></i>
                                 <p>
                                     E. Non-Commun Diseases
                                 </p>
@@ -140,7 +140,7 @@
 
                         <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-seedling"></i>
+                                <i class="nav-icon bi bi-seedling"></i>
                                 <p>
                                     F. Environmental
                                 </p>
@@ -149,7 +149,7 @@
 
                         <li class="nav-item">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-bacterium"></i>
+                                <i class="nav-icon bi bi-bacterium"></i>
                                 <p>
                                     G. Infectious Diseases
                                 </p>
@@ -171,7 +171,7 @@
 
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-print"></i>
+                        <i class="nav-icon bi bi-print"></i>
                         <p>
                             Generate Report
                         </p>

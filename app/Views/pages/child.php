@@ -18,7 +18,7 @@
             <div class="col-12">
                 <div class="info-box bg-warning text-white">
                     <span class="info-box-icon">
-                        <i class="fas fa-child-reaching"></i>
+                        <i class="bi bi-person-arms-up"></i>
                     </span>
 
                     <div class="info-box-content">
@@ -168,7 +168,7 @@
                                                                     <tr>
                                                                         <td colspan="2">
                                                                             <button type="submit" class="btn btn-success w-100">
-                                                                                <i class="fas fa-save me-1"></i> Save
+                                                                                <i class="bi bi-save me-1"></i> Save
                                                                             </button>
                                                                         </td>
                                                                     </tr>
@@ -225,7 +225,7 @@
                                                                     <tr>
                                                                         <td colspan="2">
                                                                             <button type="submit" class="btn btn-success w-100">
-                                                                                <i class="fas fa-save me-1"></i> Save
+                                                                                <i class="bi bi-save me-1"></i> Save
                                                                             </button>
                                                                         </td>
                                                                     </tr>
@@ -282,7 +282,7 @@
                                                                     <tr>
                                                                         <td colspan="2">
                                                                             <button type="submit" class="btn btn-success w-100">
-                                                                                <i class="fas fa-save me-1"></i> Save
+                                                                                <i class="bi bi-save me-1"></i> Save
                                                                             </button>
                                                                         </td>
                                                                     </tr>
@@ -339,7 +339,7 @@
                                                                     <tr>
                                                                         <td colspan="2">
                                                                             <button type="submit" class="btn btn-success w-100">
-                                                                                <i class="fas fa-save me-1"></i> Save
+                                                                                <i class="bi bi-save me-1"></i> Save
                                                                             </button>
                                                                         </td>
                                                                     </tr>
@@ -408,7 +408,7 @@
                                                     <tr>
                                                         <td colspan="2">
                                                             <button type="submit" class="btn btn-success w-100">
-                                                                <i class="fas fa-save me-1"></i> Save
+                                                                <i class="bi bi-save me-1"></i> Save
                                                             </button>
                                                         </td>
                                                     </tr>

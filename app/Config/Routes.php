@@ -24,12 +24,16 @@ $routes->get('getMaternal', 'MaternalController::get');
 $routes->post('saveChild', 'ChildController::save');
 $routes->get('getChild', 'ChildController::get');
 
+$routes->post('saveOral', 'OralController::save');
+$routes->get('getOral', 'OralController::get');
+
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 $routes->resource('maternal', ['controller' => 'MaternalController']);
 $routes->resource('child', ['controller' => 'ChildController']);
+$routes->resource('oral', ['controller' => 'OralController']);
 
 
 service('auth')->routes($routes);

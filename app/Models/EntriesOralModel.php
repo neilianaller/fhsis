@@ -4,9 +4,9 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class SubSectionsModel extends Model
+class EntriesOralModel extends Model
 {
-    protected $table            = 'subsections';
+    protected $table            = 'entries_oral';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
@@ -15,9 +15,15 @@ class SubSectionsModel extends Model
     // column names sa database table
     protected $allowedFields    = [
         'id',
-        'code',
-        'name',
-        'section_code'
+        'indicator_id',
+        'barangay_code',
+        'report_month',
+        'report_year',
+        'sex',
+        'subsection',
+        'value',
+        'created_at',
+        'updated_at',
     ];
 
     protected bool $allowEmptyInserts = false;

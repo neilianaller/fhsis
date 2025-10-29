@@ -195,7 +195,7 @@
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-sm btn-success">
-                <i class="fas fa-save me-1"></i>Save
+                <i class="bi bi-save me-1"></i>Save
             </button>
         </div>
     </form>
@@ -271,7 +271,7 @@
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-sm btn-success">
-                    <i class="fas fa-save me-2"></i>Save
+                    <i class="bi bi-save me-2"></i>Save
                 </button>
             </div>
         </form>
