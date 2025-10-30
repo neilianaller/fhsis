@@ -57,6 +57,11 @@ class NCDiseaseController extends ResourceController
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
+        $ncd8Indicators = $IndicatorsModel->where('section_code', 'E')
+            ->where('subsection_id', '18')
+            ->orderBy('order_number', 'ASC')
+            ->findAll();
+
         return view('pages/ncdisease', [
             'barangays' => $barangays,
             'ncd1Indicators' => $ncd1Indicators,
@@ -66,6 +71,7 @@ class NCDiseaseController extends ResourceController
             'ncd5Indicators' => $ncd5Indicators,
             'ncd6Indicators' => $ncd6Indicators,
             'ncd7Indicators' => $ncd7Indicators,
+            'ncd8Indicators' => $ncd8Indicators,
         ]);
     }
 
@@ -101,7 +107,7 @@ class NCDiseaseController extends ResourceController
                 'report_month'  => $report_month,
                 'report_year'   => $report_year,
                 'sex'      => $entry['sex'],
-                // 'agegroup'      => $entry['agegroup'],
+                'agegroup'      => $entry['agegroup'],
                 'subsection'     => $subsection,
                 'indicator_id'     => $indicatorId
             ])->first();
@@ -120,7 +126,7 @@ class NCDiseaseController extends ResourceController
                     'report_month'  => $report_month,
                     'report_year'   => $report_year,
                     'sex'      => $entry['sex'],
-                    // 'agegroup'      => $entry['agegroup'],
+                    'agegroup'      => $entry['agegroup'],
                     'subsection'     => $subsection,
                     'value'         => $entry['value'],
                     'created_at'    => date('Y-m-d H:i:s'),

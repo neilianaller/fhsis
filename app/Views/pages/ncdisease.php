@@ -520,6 +520,305 @@
 
                         </div>
 
+                        <div class="row mb-2">
+
+                            <!-- E.8 MENTAL HEALTH -->
+                            <div class="col-12">
+
+                                <div class="card">
+
+                                    <div class="card-header text-center fw-bold">E.8. Mental Health</div>
+
+                                    <div class="card-body">
+
+                                        <div class="row">
+
+                                            <!-- 0-9 -->
+                                            <div class="col-3">
+
+                                                <div class="card">
+
+                                                    <div class="card-header text-center fw-bold">0-9 years old</div>
+
+                                                    <div class="card-body">
+
+                                                        <form class="needs-validation entriesForm" data-subsection="ncd8" novalidate>
+
+                                                            <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
+                                                                <?php foreach ($ncd8Indicators as $ncd8indicator): ?>
+                                                                    <option value="<?= $ncd8indicator['id']; ?>">
+                                                                        <?= $ncd8indicator['code'] . ". " . $ncd8indicator['name']; ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+
+                                                            <div class="card">
+
+                                                                <div class="card-header text-center">0-9 years old</div>
+
+                                                                <div class="card-body">
+
+                                                                    <table class="table table-bordered text-center">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <td>Sex</td>
+                                                                                <td></td>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>Male</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="0-9" data-sex="male" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>Female</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="0-9" data-sex="female" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                <td class="fw-bold">TOTAL</td>
+                                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="2">
+                                                                                    <button type="submit" class="btn btn-success w-100">
+                                                                                        <i class="bi bi-save me-1"></i> Save
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <!-- 10-19 -->
+                                            <div class="col-3">
+
+                                                <div class="card">
+
+                                                    <div class="card-header text-center fw-bold">10-19 years old</div>
+
+                                                    <div class="card-body">
+
+                                                        <form class="needs-validation entriesForm" data-subsection="ncd8" novalidate>
+
+                                                            <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
+                                                                <?php foreach ($ncd8Indicators as $ncd8indicator): ?>
+                                                                    <option value="<?= $ncd8indicator['id']; ?>">
+                                                                        <?= $ncd8indicator['code'] . ". " . $ncd8indicator['name']; ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+
+                                                            <div class="card">
+
+                                                                <div class="card-header text-center">10-19 years old</div>
+
+                                                                <div class="card-body">
+
+                                                                    <table class="table table-bordered text-center">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <td>Sex</td>
+                                                                                <td></td>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>Male</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="10-19" data-sex="male" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>Female</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="10-19" data-sex="female" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                <td class="fw-bold">TOTAL</td>
+                                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="2">
+                                                                                    <button type="submit" class="btn btn-success w-100">
+                                                                                        <i class="bi bi-save me-1"></i> Save
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <!-- 20-59 -->
+                                            <div class="col-3">
+
+                                                <div class="card">
+
+                                                    <div class="card-header text-center fw-bold">20-59 years old</div>
+
+                                                    <div class="card-body">
+
+                                                        <form class="needs-validation entriesForm" data-subsection="ncd8" novalidate>
+
+                                                            <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
+                                                                <?php foreach ($ncd8Indicators as $ncd8indicator): ?>
+                                                                    <option value="<?= $ncd8indicator['id']; ?>">
+                                                                        <?= $ncd8indicator['code'] . ". " . $ncd8indicator['name']; ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+
+                                                            <div class="card">
+
+                                                                <div class="card-header text-center">20-59 years old</div>
+
+                                                                <div class="card-body">
+
+                                                                    <table class="table table-bordered text-center">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <td>Sex</td>
+                                                                                <td></td>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>Male</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="20-59" data-sex="male" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>Female</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="20-59" data-sex="female" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                <td class="fw-bold">TOTAL</td>
+                                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="2">
+                                                                                    <button type="submit" class="btn btn-success w-100">
+                                                                                        <i class="bi bi-save me-1"></i> Save
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <!-- 60-above -->
+                                            <div class="col-3">
+
+                                                <div class="card">
+
+                                                    <div class="card-header text-center fw-bold">60-above years old</div>
+
+                                                    <div class="card-body">
+
+                                                        <form class="needs-validation entriesForm" data-subsection="ncd8" novalidate>
+
+                                                            <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
+                                                                <?php foreach ($ncd8Indicators as $ncd8indicator): ?>
+                                                                    <option value="<?= $ncd8indicator['id']; ?>">
+                                                                        <?= $ncd8indicator['code'] . ". " . $ncd8indicator['name']; ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+
+                                                            <div class="card">
+
+                                                                <div class="card-header text-center">60 and above</div>
+
+                                                                <div class="card-body">
+
+                                                                    <table class="table table-bordered text-center">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <td>Sex</td>
+                                                                                <td></td>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>Male</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="60-above" data-sex="male" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td>Female</td>
+                                                                                <td><input type="number" class="form-control" data-agegroup="60-above" data-sex="female" data-subsection="ncd8"></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr>
+                                                                                <td class="fw-bold">TOTAL</td>
+                                                                                <td><input type="number" required readonly class="form-control fw-bold"></td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="2">
+                                                                                    <button type="submit" class="btn btn-success w-100">
+                                                                                        <i class="bi bi-save me-1"></i> Save
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tfoot>
+                                                                    </table>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
                 </div>
@@ -608,14 +907,16 @@
             const year = $('#report_year').val();
             const indicatorId = form.find('select[name="indicator_id"]').val();
 
-            console.log('SUBSECTION', subsection);
-
             const entries = [];
             form.find('tbody tr').each(function() {
-                const sex = $(this).find('td:first').text().trim().toLowerCase();
-                const value = $(this).find('input[type="number"]').val() || 0;
+                const input = $(this).find('input[type="number"]');
+                const sex = input.data('sex');
+                const agegroup = input.data('agegroup') || null;
+                const value = input.val() || 0;
+
                 entries.push({
                     sex,
+                    agegroup,
                     value
                 });
             });
