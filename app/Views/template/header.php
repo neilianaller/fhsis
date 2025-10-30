@@ -233,6 +233,11 @@
                     ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
                     : 'ENTRY — E. Non-Communicable Diseases';
 
+            case 'envi':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
+                    : 'ENTRY — F. Environmental Health and Sanitation';
+
             default:
                 return $withIcon
                     ? '<i class="bi bi-file-earmark me-2"></i>' . ucfirst($uri)

@@ -139,8 +139,8 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-seedling"></i>
+                            <a href="<?= base_url('envi') ?>" class="nav-link <?= (uri_string() == 'envi') ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-tree"></i>
                                 <p>
                                     F. Environmental
                                 </p>

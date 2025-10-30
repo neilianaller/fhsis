@@ -30,6 +30,9 @@ $routes->get('getOral', 'OralController::get');
 $routes->post('saveNCDisease', 'NCDiseaseController::save');
 $routes->get('getNCDisease', 'NCDiseaseController::get');
 
+$routes->post('saveEnvi', 'EnviController::save');
+$routes->get('getEnvi', 'EnviController::get');
+
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
@@ -37,6 +40,7 @@ $routes->resource('maternal', ['controller' => 'MaternalController']);
 $routes->resource('child', ['controller' => 'ChildController']);
 $routes->resource('oral', ['controller' => 'OralController']);
 $routes->resource('ncdisease', ['controller' => 'NCDiseaseController']);
+$routes->resource('envi', ['controller' => 'EnviController']);
 
 
 service('auth')->routes($routes);
