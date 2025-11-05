@@ -35,3 +35,70 @@ input, label{
     text-transform: uppercase;
     font-weight: bold;
 }
+
+
+/* Full-screen overlay for the loader */
+#loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* ✅ black with 60% opacity */
+    z-index: 9999;
+    text-align: center;
+    color: #1b4332;
+    font-weight: bold;
+}
+
+/* Center the loader in the middle of the screen */
+#loading-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    width: 30%;
+}
+
+/* Loader bar style */
+.loader {
+    display: block;
+    --height-of-loader: 6px;
+    --loader-color: white;
+    width: 100%;
+    height: var(--height-of-loader);
+    border-radius: 30px;
+    background-color: rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+/* Animation for loader bar */
+.loader::before {
+    content: "";
+    position: absolute;
+    background: var(--loader-color);
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    border-radius: 30px;
+    animation: moving 1s ease-in-out infinite;
+}
+
+@keyframes moving {
+    50% {
+        width: 100%;
+    }
+
+    100% {
+        width: 0;
+        right: 0;
+        left: unset;
+    }
+}
+
+tr {
+    cursor: pointer;
+}

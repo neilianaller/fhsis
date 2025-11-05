@@ -38,6 +38,12 @@ $routes->get('getIDisease', 'IDiseaseController::get');
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
+$routes->post('reportslist', 'ReportsController::list');
+$routes->get('download/(:num)', 'ReportsController::download/$1');
+
+
+$routes->post('generateReport', 'ReportsController::generateReport');
+
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 $routes->resource('maternal', ['controller' => 'MaternalController']);
 $routes->resource('child', ['controller' => 'ChildController']);

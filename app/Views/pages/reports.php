@@ -90,11 +90,32 @@
 
         </div>
 
+        <div class="row mb-2">
+            <table id="datatable" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-md-5">CREATED AT</th>
+                        <th class="col-md-1">YEAR</th>
+                        <th class="col-md-1">QUARTER</th>
+                        <th class="col-md-3">BARANGAY</th>
+                        <th class="col-md-2">SECTION</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
     </div>
 
 </div>
 
-
+<!-- LOADING SCREEN OVERLAY -->
+<div id="loading-overlay">
+    <div id="loading-container">
+        <div class="loader"></div>
+        <br />
+        <span>Loading...</span>
+    </div>
+</div>
 
 
 
@@ -104,6 +125,119 @@
 
 <?= $this->section('javascripts') ?>
 <script>
+    // POPULATE TABLE
+    let table = $("#datatable").DataTable({
+        responsive: true,
+        processing: true,
+        serverSide: true,
+        paging: true,
+        lengthChange: true,
+        lengthMenu: [50, 100],
+        searching: true,
+        ordering: true,
+        autoWidth: false,
+        ajax: {
+            url: '<?= base_url('reportslist') ?>',
+            type: 'POST',
+        },
+        columns: [{
+                data: 'created_at',
+            },
+            {
+                data: 'report_year',
+            },
+            {
+                data: 'report_quarter',
+            },
+            {
+                data: 'barangay',
+            },
+            {
+                data: 'section',
+            },
+        ],
+    });
 
+    $(document).ready(function() {
+
+        // 🔹 When user clicks PRINT REPORT
+        $('#printBtn').on('click', function() {
+
+            $("#loading-overlay").show();
+
+            // Collect selected filter values
+            const year = $('#report_year').val();
+            const quarter = $('#report_quarter').val();
+            const barangay = $('#barangay_code').val();
+            const section = $('#sectionSelect').val();
+
+            // Optional: quick validation
+            if (!year || !quarter || !barangay || !section) {
+                alert('Please complete all filters first.');
+                return;
+            }
+
+            // 🔹 Send data via AJAX to your controller
+            $.ajax({
+                url: "<?= base_url('generateReport') ?>",
+                method: "POST",
+                data: {
+                    sectionSelect: $('#sectionSelect').val(),
+                    report_year: $('#report_year').val(),
+                    report_quarter: $('#report_quarter').val(),
+                    barangay_code: $('#barangay_code').val()
+                },
+                beforeSend: function() {
+                    $("#loading-overlay").show();
+                },
+                success: function(response) {
+                    $("#loading-overlay").hide();
+                    table.ajax.reload();
+
+                    if (response.status === 'success') {
+                        Swal.fire({
+                            title: '✅ Report Generated!',
+                            text: response.message,
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: 'Download',
+                            cancelButtonText: 'Close'
+                        }).then((result) => {
+                            if (result.isConfirmed && response.download_url) {
+                                window.open(response.download_url, '_blank');
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: '⚠️ Error',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    $("#loading-overlay").hide();
+
+                    Swal.fire({
+                        title: '🚫 Server Error',
+                        text: xhr.responseText || 'An unexpected error occurred.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+        });
+    });
+
+    // ✅ Make rows clickable for file download
+    $('#datatable tbody').on('click', 'tr', function() {
+        let data = table.row(this).data();
+        if (data && data.id) {
+            window.location.href = "<?= base_url('download') ?>/" + data.id;
+        }
+    });
 </script>
+
 <?= $this->endSection() ?>
