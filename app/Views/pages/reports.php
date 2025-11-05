@@ -94,11 +94,12 @@
             <table id="datatable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
-                        <th class="col-md-5">CREATED AT</th>
+                        <th class="col-md-3">CREATED AT</th>
                         <th class="col-md-1">YEAR</th>
                         <th class="col-md-1">QUARTER</th>
                         <th class="col-md-3">BARANGAY</th>
-                        <th class="col-md-2">SECTION</th>
+                        <th class="col-md-1">SECTION</th>
+                        <th class="col-md-3">FILE NAME</th>
                     </tr>
                 </thead>
             </table>
@@ -132,16 +133,34 @@
         serverSide: true,
         paging: true,
         lengthChange: true,
-        lengthMenu: [50, 100],
+        lengthMenu: [10, 20, 50],
         searching: true,
-        ordering: true,
         autoWidth: false,
+        order: [
+            [6, 'desc']
+        ],
         ajax: {
             url: '<?= base_url('reportslist') ?>',
             type: 'POST',
         },
         columns: [{
                 data: 'created_at',
+                render: function(data, type, row) {
+                    if (!data) return '';
+                    const date = new Date(data);
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    };
+                    const formattedDate = date.toLocaleString('en-US', options)
+                        .replace(',', ',') // keep comma after day
+                        .replace(' at', ' —'); // replace "at" with "—"
+                    return formattedDate;
+                }
             },
             {
                 data: 'report_year',
@@ -154,6 +173,9 @@
             },
             {
                 data: 'section',
+            },
+            {
+                data: 'filepath',
             },
         ],
     });
@@ -177,9 +199,21 @@
                 return;
             }
 
+            // 🔹 Determine AJAX URL based on section
+            let ajaxUrl = '';
+            switch (section) {
+                case '1': // Section A
+                    ajaxUrl = "<?= base_url('generateFPReport') ?>";
+                    break;
+                case '2': // Section B
+                    ajaxUrl = "<?= base_url('generateMaternalReport') ?>";
+                    break;
+                    // Add more sections if needed
+            }
+
             // 🔹 Send data via AJAX to your controller
             $.ajax({
-                url: "<?= base_url('generateReport') ?>",
+                url: ajaxUrl,
                 method: "POST",
                 data: {
                     sectionSelect: $('#sectionSelect').val(),
@@ -196,23 +230,12 @@
 
                     if (response.status === 'success') {
                         Swal.fire({
-                            title: '✅ Report Generated!',
+                            title: 'Report Generated!',
                             text: response.message,
                             icon: 'success',
-                            showCancelButton: true,
-                            confirmButtonText: 'Download',
-                            cancelButtonText: 'Close'
-                        }).then((result) => {
-                            if (result.isConfirmed && response.download_url) {
-                                window.open(response.download_url, '_blank');
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            title: '⚠️ Error',
-                            text: response.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
+                            showConfirmButton: false,
+                            timer: 2000, // ⏱ auto close after 2 seconds
+                            timerProgressBar: true
                         });
                     }
                 },

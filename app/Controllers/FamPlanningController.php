@@ -17,6 +17,9 @@ class FamPlanningController extends ResourceController
 
         $barangays = $BarangaysModel->findAll();
         $fpIndicators = $IndicatorsModel->where('section_code', 'A')
+            ->where('code !=', '4')
+            ->where('code !=', '6')
+            ->where('code !=', '7')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
