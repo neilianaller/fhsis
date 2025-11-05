@@ -12,7 +12,7 @@
         <div class="row">
 
             <div class="col-12">
-                <div class="info-box text-bg-secondary">
+                <div class="info-box text-bg-success">
                     <span class="info-box-icon">
                         <i class="bi bi-tree-fill"></i>
                     </span>

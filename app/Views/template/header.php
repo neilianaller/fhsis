@@ -193,11 +193,6 @@
         $uri = uri_string();
         switch ($uri) {
             
-            case '':
-                return $withIcon
-                    ? '<i class="bi bi-table me-2"></i>Dashboard'
-                    : 'Dashboard';
-
             case 'dashboard':
                 return $withIcon
                     ? '<i class="bi bi-table me-2"></i>Dashboard'
@@ -237,6 +232,16 @@
                 return $withIcon
                     ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
                     : 'ENTRY — F. Environmental Health and Sanitation';
+
+            case 'idisease':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-database-add me-2"></i> ADD ENTRY'
+                    : 'ENTRY — G. Infectious Disease Prevention and Control Services';
+
+            case 'reports':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-printer-fill me-2"></i> GENERATE REPORT'
+                    : 'GENERATE REPORT';
 
             default:
                 return $withIcon

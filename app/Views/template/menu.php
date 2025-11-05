@@ -77,7 +77,7 @@
 
                 <?php
                 $uri = uri_string();
-                $addEntryPages = ['famplanning', 'maternal', 'child', 'oral', 'ncd', 'environmental', 'infectious'];
+                $addEntryPages = ['famplanning', 'maternal', 'child', 'oral', 'ncdisease', 'envi', 'idisease'];
 
                 $isAddEntryActive = in_array($uri, $addEntryPages);
                 ?>
@@ -95,7 +95,7 @@
 
                         <li class="nav-item">
                             <a href="<?= base_url('famplanning') ?>" class="nav-link <?= (uri_string() == 'famplanning') ? 'active' : '' ?>">
-                                <i class="nav-icon bi bi-people"></i>
+                                <i class="nav-icon bi bi-people-fill"></i>
                                 <p>
                                     A. Family Planning
                                 </p>
@@ -140,7 +140,7 @@
 
                         <li class="nav-item">
                             <a href="<?= base_url('envi') ?>" class="nav-link <?= (uri_string() == 'envi') ? 'active' : '' ?>">
-                                <i class="nav-icon bi bi-tree"></i>
+                                <i class="nav-icon bi bi-tree-fill"></i>
                                 <p>
                                     F. Environmental
                                 </p>
@@ -148,8 +148,8 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-bacterium"></i>
+                            <a href="<?= base_url('idisease') ?>" class="nav-link <?= (uri_string() == 'idisease') ? 'active' : '' ?>">
+                                <i class="nav-icon bi bi-virus"></i>
                                 <p>
                                     G. Infectious Diseases
                                 </p>
@@ -170,8 +170,8 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-print"></i>
+                    <a href="<?= base_url('reports') ?>" class="nav-link <?= (uri_string() == 'reports') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-printer-fill"></i>
                         <p>
                             Generate Report
                         </p>
