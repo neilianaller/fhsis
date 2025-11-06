@@ -5,7 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+$routes->get('/', 'ReportsController::index');
 $routes->resource('dashboard', ['controller' => 'DashboardController']);
 $routes->resource('sections', ['controller' => 'SectionsController']);
 $routes->resource('subsections', ['controller' => 'SubSectionsController']);
@@ -40,7 +40,6 @@ $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 
 $routes->post('reportslist', 'ReportsController::list');
 $routes->get('download/(:num)', 'ReportsController::download/$1');
-
 
 $routes->post('generateFPReport', 'ReportsController::generateFPReport');
 

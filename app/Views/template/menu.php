@@ -66,11 +66,21 @@
                 aria-label="Main navigation"
                 data-accordion="false"
                 id="navigation">
-                <li class="nav-item">
+
+                <!-- <li class="nav-item">
                     <a href="<?= base_url('dashboard') ?>" class="nav-link <?= (uri_string() == 'dashboard') ? 'active' : '' ?>">
                         <i class="nav-icon bi bi-table"></i>
                         <p>
                             Dashboard
+                        </p>
+                    </a>
+                </li> -->
+
+                <li class="nav-item">
+                    <a href="<?= base_url('reports') ?>" class="nav-link <?= (uri_string() == 'reports') ? 'active' : '' ?>">
+                        <i class="nav-icon bi bi-printer-fill"></i>
+                        <p>
+                            Generate Report
                         </p>
                     </a>
                 </li>
@@ -165,15 +175,6 @@
                         <i class="nav-icon bi bi-puzzle-fill"></i>
                         <p>
                             Sections
-                        </p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="<?= base_url('reports') ?>" class="nav-link <?= (uri_string() == 'reports') ? 'active' : '' ?>">
-                        <i class="nav-icon bi bi-printer-fill"></i>
-                        <p>
-                            Generate Report
                         </p>
                     </a>
                 </li>

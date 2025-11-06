@@ -193,6 +193,11 @@
         $uri = uri_string();
         switch ($uri) {
             
+            case '':
+                return $withIcon
+                    ? '<i class="nav-icon bi bi-printer-fill me-2"></i> GENERATE REPORT'
+                    : 'GENERATE REPORT';
+
             case 'dashboard':
                 return $withIcon
                     ? '<i class="bi bi-table me-2"></i>Dashboard'

@@ -19,6 +19,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
+use PhpOffice\PhpSpreadsheet\Writer\Html;
 class ReportsController extends ResourceController
 {
 
@@ -303,4 +304,5 @@ class ReportsController extends ResourceController
         return $this->response->download($log['filepath'], null)
             ->setFileName(basename($log['filepath']));
     }
+
 }
