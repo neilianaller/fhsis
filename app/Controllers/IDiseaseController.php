@@ -18,32 +18,32 @@ class IDiseaseController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $id1Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '22')
+            ->where('subsection', '22')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $id2Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '23')
+            ->where('subsection', '23')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $id3Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '24')
+            ->where('subsection', '24')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $id4Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '25')
+            ->where('subsection', '25')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $id5Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '26')
+            ->where('subsection', '26')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $id6Indicators = $IndicatorsModel->where('section_code', 'G')
-            ->where('subsection_id', '27')
+            ->where('subsection', '27')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 

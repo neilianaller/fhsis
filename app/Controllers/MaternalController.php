@@ -18,19 +18,23 @@ class MaternalController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $b1Indicators = $IndicatorsModel->where('section_code', 'B')
-            ->where('subsection_id', '2')
+            ->where('subsection', 'b1')
             ->where('code!=', '1b')
             ->where('code!=', '1c')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $b2Indicators = $IndicatorsModel->where('section_code', 'B')
-            ->where('subsection_id', '3')
+            ->where('subsection', 'b2')
+            ->where('code !=', '1')
+            ->where('code !=', '2')
+            ->where('code !=', '3')
+            ->where('code !=', '4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $b3Indicators = $IndicatorsModel->where('section_code', 'B')
-            ->where('subsection_id', '4')
+            ->where('subsection', 'b3')
             ->where('code!=', '1b')
             ->where('code!=', '1c')
             ->orderBy('order_number', 'ASC')

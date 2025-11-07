@@ -17,7 +17,7 @@ class CategoriesModel extends Model
         'id',
         'code',
         'name',
-        'subsection_id',
+        'subsection',
         'section_code'
     ];
 

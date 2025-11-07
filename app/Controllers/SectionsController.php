@@ -40,7 +40,7 @@ class SectionsController extends ResourceController
 
         foreach ($subsections as &$sub) {
             // Categories under this subsection
-            $categories = $categoriesModel->where('subsection_id', $sub['id'])->findAll();
+            $categories = $categoriesModel->where('subsection', $sub['id'])->findAll();
 
             foreach ($categories as &$cat) {
                 $cat['indicators'] = $indicatorsModel->where('category_id', $cat['id'])->findAll();
@@ -48,7 +48,7 @@ class SectionsController extends ResourceController
 
             // Indicators directly under subsection (no category)
             $sub['indicators'] = $indicatorsModel
-                ->where('subsection_id', $sub['id'])
+                ->where('subsection', $sub['id'])
                 ->where('category_id', '')
                 ->findAll();
 

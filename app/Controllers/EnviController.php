@@ -18,19 +18,19 @@ class EnviController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $e1Indicators = $IndicatorsModel->where('section_code', 'F')
-            ->where('subsection_id', '19')
+            ->where('subsection', '19')
             ->where('code !=', '1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $e2Indicators = $IndicatorsModel->where('section_code', 'F')
-            ->where('subsection_id', '20')
+            ->where('subsection', '20')
             ->where('code !=', '1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $e3Indicators = $IndicatorsModel->where('section_code', 'F')
-            ->where('subsection_id', '21')
+            ->where('subsection', '21')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 

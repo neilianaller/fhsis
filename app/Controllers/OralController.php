@@ -18,7 +18,7 @@ class OralController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $o1Indicators = $IndicatorsModel->where('section_code', 'D')
-            ->where('subsection_id', '9')
+            ->where('subsection', '9')
             ->where('id !=', '170')
             ->where('id !=', '143')
             ->where('id !=', '146')
@@ -33,7 +33,7 @@ class OralController extends ResourceController
             ->findAll();
 
         $o2Indicators = $IndicatorsModel->where('section_code', 'D')
-            ->where('subsection_id', '10')
+            ->where('subsection', '10')
             ->where('id !=', '170')
             ->where('id !=', '173')
             ->orderBy('order_number', 'ASC')
