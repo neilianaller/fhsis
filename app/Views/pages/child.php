@@ -653,5 +653,28 @@
         });
 
     });
+
+    $(document).ready(function() {
+        $('.entriesForm[data-category="ca4"]').each(function() {
+            let form = $(this);
+
+            // When the dropdown changes
+            form.find('#indicator_id').on('change', function() {
+                let selectedId = parseInt($(this).val());
+                const disableMaleFor = [103, 104];
+
+                // Find the male input only inside this form
+                let maleInput = form.find('input[data-sex="male"]');
+
+                if (disableMaleFor.includes(selectedId)) {
+                    maleInput.prop('disabled', true);
+                    // Optional: clear the value when disabled
+                    // maleInput.val('');
+                } else {
+                    maleInput.prop('disabled', false);
+                }
+            }).trigger('change'); // run once on load
+        });
+    });
 </script>
 <?= $this->endSection() ?>
