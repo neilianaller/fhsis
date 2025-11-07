@@ -18,8 +18,8 @@ class OralController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $o1Indicators = $IndicatorsModel->where('section_code', 'D')
-            ->where('subsection', '9')
-            ->where('id !=', '170')
+            ->where('subsection', 'o1')
+            ->where('id !=', '140')
             ->where('id !=', '143')
             ->where('id !=', '146')
             ->where('id !=', '149')
@@ -33,7 +33,7 @@ class OralController extends ResourceController
             ->findAll();
 
         $o2Indicators = $IndicatorsModel->where('section_code', 'D')
-            ->where('subsection', '10')
+            ->where('subsection', 'o2')
             ->where('id !=', '170')
             ->where('id !=', '173')
             ->orderBy('order_number', 'ASC')
@@ -77,7 +77,8 @@ class OralController extends ResourceController
                 'barangay_code' => $barangay_code,
                 'report_month'  => $report_month,
                 'report_year'   => $report_year,
-                'sex'      => $entry['sex'],
+                'sex'      => $entry['sex'] ?? null,
+                'agegroup'      => $entry['agegroup'] ?? null,
                 'subsection'     => $subsection,
                 'indicator_id'     => $indicatorId
             ])->first();
@@ -96,6 +97,7 @@ class OralController extends ResourceController
                     'report_month'  => $report_month,
                     'report_year'   => $report_year,
                     'sex'      => $entry['sex'],
+                    'agegroup'      => $entry['agegroup'],
                     'subsection'     => $subsection,
                     'value'         => $entry['value'],
                     'created_at'    => date('Y-m-d H:i:s'),

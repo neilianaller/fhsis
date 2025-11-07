@@ -189,17 +189,21 @@
 
                                             <table class="table table-bordered text-center">
                                                 <thead>
-                                                    <td>Sex</td>
+                                                    <td>Age Group</td>
                                                     <td></td>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>Male</td>
-                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="o2"></td>
+                                                        <td>10-14</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-subsection="o2"></td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Female</td>
-                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="o2"></td>
+                                                        <td>15-19</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-subsection="o2"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>20-49</td>
+                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-subsection="o2"></td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot>
@@ -270,10 +274,23 @@
                         form.find('table input[type="number"]').val(''); // clear current form only
 
                         entries.forEach(entry => {
-                            const input = form.find(`input[data-sex="${entry.sex}"][data-subsection="${entry.subsection}"]`);
+                            // 🔹 Handle both sex + agegroup (if applicable)
+                            let selector = `input[data-subsection="${entry.subsection}"]`;
+
+                            if (entry.sex) {
+                                selector += `[data-sex="${entry.sex}"]`;
+                            }
+
+                            if (entry.agegroup) {
+                                selector += `[data-agegroup="${entry.agegroup}"]`;
+                            }
+
+                            const input = form.find(selector);
                             if (input.length) {
                                 input.val(entry.value);
                                 input.trigger('input'); // recalc total
+                            } else {
+                                console.warn('No matching input for', selector);
                             }
                         });
                     } else {
@@ -285,6 +302,7 @@
                 }
             });
         }
+
 
         // Load entries for each form on page ready
         $('.entriesForm').each(function() {
@@ -319,10 +337,14 @@
 
             const entries = [];
             form.find('tbody tr').each(function() {
-                const sex = $(this).find('td:first').text().trim().toLowerCase();
-                const value = $(this).find('input[type="number"]').val() || 0;
+                const input = $(this).find('input[type="number"]');
+                const sex = input.data('sex') || null;
+                const agegroup = input.data('agegroup') || null;
+                const value = input.val() || 0;
+
                 entries.push({
                     sex,
+                    agegroup,
                     value
                 });
             });

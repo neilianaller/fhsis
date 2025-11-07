@@ -20,6 +20,7 @@ class EntriesOralModel extends Model
         'report_month',
         'report_year',
         'sex',
+        'agegroup',
         'subsection',
         'value',
         'created_at',

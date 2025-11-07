@@ -214,6 +214,21 @@
                 case '3': // Section B
                     ajaxUrl = "<?= base_url('generateChildReport') ?>";
                     break;
+                case '4': // Section B
+                    ajaxUrl = "<?= base_url('generateOralReport') ?>";
+                    break;
+                case '5': // Section B
+                    ajaxUrl = "<?= base_url('generateNCDiseaseReport') ?>";
+                    break;
+                case '6': // Section B
+                    ajaxUrl = "<?= base_url('generateEnviReport') ?>";
+                    break;
+                case '7': // Section B
+                    ajaxUrl = "<?= base_url('generateIDiseaseReport') ?>";
+                    break;
+                case 'allsections': // Section B
+                    ajaxUrl = "<?= base_url('generateAllReport') ?>";
+                    break;
                     // Add more sections if needed
             }
 

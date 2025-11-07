@@ -111,6 +111,19 @@ class ReportsController extends ResourceController
         return $this->response->setStatusCode(Response::HTTP_OK)->setJSON($response);
     }
 
+    public function download($id)
+    {
+        $reportsModel = new \App\Models\ReportsModel();
+        $log = $reportsModel->find($id);
+
+        if (!$log || !is_file($log['filepath'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('File not found.');
+        }
+
+        return $this->response->download($log['filepath'], null)
+            ->setFileName(basename($log['filepath']));
+    }
+
     protected $sectionModels = [
         // Map section ID or code to model class
         '1' => EntriesFPModel::class,
@@ -584,19 +597,135 @@ class ReportsController extends ResourceController
         }
     }
 
-
-
-
-    public function download($id)
+    public function generateOralReport()
     {
-        $reportsModel = new \App\Models\ReportsModel();
-        $log = $reportsModel->find($id);
+        try {
+            $data = $this->prepareReportData('D'); // Section B for maternal
 
-        if (!$log || !is_file($log['filepath'])) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('File not found.');
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
+
+            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+
+            // 🔹 Load Excel template
+            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            if (!is_file($templateFile)) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+            }
+
+            $spreadsheet = IOFactory::load($templateFile);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 Fill header info
+            $sheet->setCellValue('G6', strtoupper($barangayName));
+            $sheet->setCellValue('J2', $year);
+            $sheet->setCellValue('G2',  $quarterLabel);
+
+            // 🔹 Define subsection mapping rules
+            $mapRules = [
+                'o1' => [
+                    1 => ['start_id' => 139, 'start_row' => 12, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 155, 'start_row' => 13, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'o2' => [
+                    1 => ['start_id' => 170, 'start_row' => 30, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-59' => 'D']],
+                    2 => ['start_id' => 173, 'start_row' => 30, 'cols' => ['10-14' => 'P', '15-19' => 'Q', '20-59' => 'R']],
+                ],
+            ];
+
+            // 🔹 Fill indicator values
+            foreach ($indicators as $indicator) {
+                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
+                if (!isset($mapRules[$sub])) {
+                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+                    continue;
+                }
+                // Determine set 1 or 2 by comparing id ranges
+                $set = null;
+                foreach ($mapRules[$sub] as $s => $rule) {
+                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                    $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                        $set = $s;
+                        break;
+                    }
+                }
+                if (!$set) continue;
+
+                $rule = $mapRules[$sub][$set];
+                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+
+                $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                $sums = [];
+
+                foreach ($entries as $entry) {
+                    $sex = trim($entry['sex'] ?? '');
+                    $agegroup = trim($entry['agegroup'] ?? '');
+                    $value = (float)($entry['value'] ?? 0);
+
+                    // 🔹 Build the key to find the column
+                    $key = '';
+
+                    if (!empty($sex) && !empty($agegroup)) {
+                        // Both sex and agegroup are used, e.g. "male_15_19"
+                        $key = strtolower("{$sex}_{$agegroup}");
+                    } elseif (!empty($sex)) {
+                        // Only sex is used, e.g. "male"
+                        $key = strtolower($sex);
+                    } elseif (!empty($agegroup)) {
+                        // Only agegroup is used, e.g. "15_19"
+                        $key = strtolower($agegroup);
+                    }
+
+                    // 🔹 Add to corresponding column if defined in rule
+                    if (isset($rule['cols'][$key])) {
+                        $col = $rule['cols'][$key];
+                        $sums[$col] = ($sums[$col] ?? 0) + $value;
+                    }
+                }
+
+
+                // Write totals
+                foreach ($sums as $col => $total) {
+                    $sheet->setCellValue($col . $rowNum, $total);
+                }
+            }
+
+            // 🔹 Save report file
+            $fileName = 'SectionD_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $tempDir = WRITEPATH . 'reports/section_d/';
+            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+            $tempPath = $tempDir . $fileName;
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempPath);
+
+            // 🔹 Log report record
+            $reportLogsModel = new \App\Models\ReportsModel();
+            $reportLogsModel->insert([
+                'report_year'    => $year,
+                'report_quarter' => $quarter,
+                'barangay'       => $barangayName,
+                'section'        => 'D',
+                'filepath'       => $tempPath,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Report generated successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error generating report: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ]);
         }
-
-        return $this->response->download($log['filepath'], null)
-            ->setFileName(basename($log['filepath']));
     }
 }
