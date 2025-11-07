@@ -42,6 +42,7 @@ $routes->post('reportslist', 'ReportsController::list');
 $routes->get('download/(:num)', 'ReportsController::download/$1');
 
 $routes->post('generateFPReport', 'ReportsController::generateFPReport');
+$routes->post('generateMaternalReport', 'ReportsController::generateMaternalReport');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 $routes->resource('maternal', ['controller' => 'MaternalController']);
