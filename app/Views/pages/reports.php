@@ -208,6 +208,9 @@
                 case '2': // Section B
                     ajaxUrl = "<?= base_url('generateMaternalReport') ?>";
                     break;
+                case '3': // Section B
+                    ajaxUrl = "<?= base_url('generateChildReport') ?>";
+                    break;
                     // Add more sections if needed
             }
 

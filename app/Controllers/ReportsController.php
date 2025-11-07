@@ -460,6 +460,183 @@ class ReportsController extends ResourceController
         }
     }
 
+     public function generateChildReport()
+    {
+        try {
+            $sectionId = $this->request->getPost('sectionSelect');
+            $year      = $this->request->getPost('report_year');
+            $quarter   = $this->request->getPost('report_quarter');
+            $barangay  = $this->request->getPost('barangay_code');
+
+            // 🔹 Convert quarter to label
+            $quarterLabel = match ((int)$quarter) {
+                1 => '1ST',
+                2 => '2ND',
+                3 => '3RD',
+                4 => '4TH',
+                default => '',
+            };
+
+            // 🔹 Fetch barangay name
+            $barangaysModel = new \App\Models\BarangaysModel();
+            $barangayData = $barangaysModel->where('code', $barangay)->first();
+            $barangayName = $barangayData['name'] ?? $barangay;
+
+            // 🔹 Verify valid section
+            if (!isset($this->sectionModels[$sectionId])) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid section selected.']);
+            }
+
+            $modelClass = $this->sectionModels[$sectionId];
+            $model = new $modelClass();
+
+            // 🔹 Get months by quarter
+            $monthRanges = [
+                1 => [1, 2, 3],
+                2 => [4, 5, 6],
+                3 => [7, 8, 9],
+                4 => [10, 11, 12],
+            ];
+            $months = $monthRanges[$quarter] ?? [];
+
+            // 🔹 Fetch entries from EntriesMaternalModel
+            $records = $model
+                ->where('report_year', $year)
+                ->where('barangay_code', $barangay)
+                ->whereIn('report_month', $months)
+                ->findAll();
+
+            // 🔹 Fetch indicators for section B
+            $indicatorsModel = new \App\Models\IndicatorsModel();
+            $indicators = $indicatorsModel
+                ->where('section_code', 'C')
+                ->orderBy('order_number', 'ASC')
+                ->findAll();
+
+            // 🔹 Group entries by indicator_id
+            $entriesByIndicator = [];
+            foreach ($records as $record) {
+                $entriesByIndicator[$record['indicator_id']][] = $record;
+            }
+
+            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+
+            // 🔹 Load Excel template
+            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            if (!is_file($templateFile)) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+            }
+
+            $spreadsheet = IOFactory::load($templateFile);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 Fill header info
+            $sheet->setCellValue('G6', strtoupper($barangayName));
+            $sheet->setCellValue('J2', $year);
+            $sheet->setCellValue('G2',  $quarterLabel);
+
+            // 🔹 Define subsection mapping rules
+            $mapRules = [
+                'ca1' => [
+                    1 => ['start_id' => 70, 'start_row' => 13, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 73, 'start_row' => 13, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca2' => [
+                    1 => ['start_id' => 75, 'start_row' => 19, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 82, 'start_row' => 19, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca3' => [
+                    1 => ['start_id' => 89, 'start_row' => 27, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 96, 'start_row' => 27, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca4' => [
+                    1 => ['start_id' => 103, 'start_row' => 37, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 106, 'start_row' => 37, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'cb' => [
+                    1 => ['start_id' => 109, 'start_row' => 43, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 113, 'start_row' => 43, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                    3 => ['start_id' => 117, 'start_row' => 49, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                    4 => ['start_id' => 124, 'start_row' => 49, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'cc' => [
+                    1 => ['start_id' => 130, 'start_row' => 59, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 135, 'start_row' => 59, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+            ];
+
+            // 🔹 Fill indicator values
+            foreach ($indicators as $indicator) {
+                $sub = strtolower(trim($indicator['category'])); // b1, b2, b3
+                if (!isset($mapRules[$sub])) {
+                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+                    continue;
+                }
+                // Determine set 1 or 2 by comparing id ranges
+                $set = null;
+                foreach ($mapRules[$sub] as $s => $rule) {
+                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                    $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                        $set = $s;
+                        break;
+                    }
+                }
+                if (!$set) continue;
+
+                $rule = $mapRules[$sub][$set];
+                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+
+                $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                $sums = [];
+
+                foreach ($entries as $entry) {
+                    $sex = trim($entry['sex']);
+                    $value    = $entry['value'] ?? 0;
+                    if (isset($rule['cols'][$sex])) {
+                        $col = $rule['cols'][$sex];
+                        $sums[$col] = ($sums[$col] ?? 0) + $value;
+                    }
+                }
+
+                // Write totals
+                foreach ($sums as $col => $total) {
+                    $sheet->setCellValue($col . $rowNum, $total);
+                }
+            }
+
+            // 🔹 Save report file
+            $fileName = 'SectionC_' . $barangay . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $tempDir = WRITEPATH . 'reports/section_c/';
+            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+            $tempPath = $tempDir . $fileName;
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempPath);
+
+            // 🔹 Log report record
+            $reportLogsModel = new \App\Models\ReportsModel();
+            $reportLogsModel->insert([
+                'report_year'    => $year,
+                'report_quarter' => $quarter,
+                'barangay'       => $barangayName,
+                'section'        => 'C',
+                'filepath'       => $tempPath,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Maternal report generated successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error generating Maternal report: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ]);
+        }
+    }
 
 
 
