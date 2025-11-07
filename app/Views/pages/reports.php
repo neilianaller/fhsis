@@ -42,6 +42,7 @@
                                         <option value="2">Quarter 2</option>
                                         <option value="3">Quarter 3</option>
                                         <option value="4">Quarter 4</option>
+                                        <option value="5">All Year</option>
                                     </select>
 
                                 </div>
@@ -58,6 +59,7 @@
                                                 <?= $barangay['name']; ?>
                                             </option>
                                         <?php endforeach; ?>
+                                        <option value="allbgy">All Barangays</option>
                                     </select>
 
                                 </div>
@@ -73,6 +75,7 @@
                                             <?= $section['code'] . '. ' . $section['name']; ?>
                                         </option>
                                     <?php endforeach; ?>
+                                    <option value="allsections">ALL SECTIONS</option>
                                 </select>
                             </div>
 

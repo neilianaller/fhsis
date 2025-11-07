@@ -120,6 +120,7 @@ class ReportsController extends ResourceController
         '5' => EntriesNCDiseaseModel::class,
         '6' => EntriesEnviModel::class,
         '7' => EntriesIDiseaseModel::class,
+        // 'allsections' => EntriesIDiseaseModel::class,
 
     ];
 
@@ -131,70 +132,107 @@ class ReportsController extends ResourceController
         '5' => 'section_e.xlsx',
         '6' => 'section_f.xlsx',
         '7' => 'section_g.xlsx',
+        'allsections' => 'all.xlsx',
     ];
 
     /**
      * @var IncomingRequest
      */
     protected $request;
+
+
+    private function prepareReportData(string $sectionCode)
+    {
+        $year     = $this->request->getPost('report_year');
+        $quarter  = $this->request->getPost('report_quarter');
+        $barangay = $this->request->getPost('barangay_code');
+        $sectionId = $this->request->getPost('sectionSelect');
+
+        // 🔹 Convert quarter → label
+        $quarterLabel = match ((int)$quarter) {
+            1 => '1ST',
+            2 => '2ND',
+            3 => '3RD',
+            4 => '4TH',
+            5 => '',
+            default => ''
+        };
+
+        // 🔹 Quarter → months
+        $monthRanges = [
+            1 => [1, 2, 3],
+            2 => [4, 5, 6],
+            3 => [7, 8, 9],
+            4 => [10, 11, 12],
+            5 => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        ];
+        $months = $monthRanges[$quarter] ?? [];
+
+        // 🔹 Get barangay name
+        $barangaysModel = new \App\Models\BarangaysModel();
+        $barangayData = $barangaysModel->where('code', $barangay)->first();
+        $barangayName = ($barangay === 'allbgy')
+            ? 'LANTAPAN'
+            : ($barangayData['name'] ?? $barangay);
+
+        // 🔹 Validate section
+        if (!isset($this->sectionModels[$sectionId])) {
+            throw new \Exception("Invalid section selected.");
+        }
+
+        $modelClass = $this->sectionModels[$sectionId];
+        $model = new $modelClass();
+
+        $builder = $model
+            ->where('report_year', $year)
+            ->whereIn('report_month', $months);
+
+        if ($barangay !== 'allbgy') {
+            $builder->where('barangay_code', $barangay);
+        }
+
+        // 🔹 Fetch entries
+        $records = $builder->findAll();
+
+        // 🔹 Fetch indicators
+        $indicatorsModel = new \App\Models\IndicatorsModel();
+        $indicators = $indicatorsModel
+            ->where('section_code', $sectionCode)
+            ->orderBy('order_number', 'ASC')
+            ->findAll();
+
+        // 🔹 Group entries by indicator
+        $entriesByIndicator = [];
+        foreach ($records as $record) {
+            $entriesByIndicator[$record['indicator_id']][] = $record;
+        }
+
+        // 🔹 Return all as one structured array
+        return [
+            'year'               => $year,
+            'quarter'            => $quarter,
+            'quarterLabel'       => $quarterLabel,
+            'barangayCode'       => $barangay,
+            'barangayName'       => $barangayName,
+            'model'              => $model,
+            'entries'            => $records,
+            'indicators'         => $indicators,
+            'entriesByIndicator' => $entriesByIndicator,
+        ];
+    }
+
     public function generateFPReport()
     {
         try {
-            $sectionId = $this->request->getPost('sectionSelect');
-            $year      = $this->request->getPost('report_year');
-            $quarter   = $this->request->getPost('report_quarter');
-            $barangay  = $this->request->getPost('barangay_code');
+            $data = $this->prepareReportData('A'); // Section B for maternal
 
-            // 🔹 Convert quarter to label
-            $quarterLabel = match ((int)$quarter) {
-                1 => '1ST',
-                2 => '2ND',
-                3 => '3RD',
-                4 => '4TH',
-                default => '',
-            };
-
-            // 🔹 Fetch barangay name
-            $barangaysModel = new \App\Models\BarangaysModel();
-            $barangayData = $barangaysModel->where('code', $barangay)->first();
-            $barangayName = $barangayData['name'] ?? $barangay;
-
-            // 🔹 Verify valid section
-            if (!isset($this->sectionModels[$sectionId])) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid section selected.']);
-            }
-
-            $modelClass = $this->sectionModels[$sectionId];
-            $model = new $modelClass();
-
-            // 🔹 Get months by quarter
-            $monthRanges = [
-                1 => [1, 2, 3],
-                2 => [4, 5, 6],
-                3 => [7, 8, 9],
-                4 => [10, 11, 12],
-            ];
-            $months = $monthRanges[$quarter] ?? [];
-
-            // 🔹 Fetch entries from EntriesFPModel
-            $records = $model
-                ->where('report_year', $year)
-                ->where('barangay_code', $barangay)
-                ->whereIn('report_month', $months)
-                ->findAll();
-
-            // 🔹 Fetch indicators for the section
-            $indicatorsModel = new \App\Models\IndicatorsModel();
-            $indicators = $indicatorsModel
-                ->where('section_code', 'A')
-                ->orderBy('order_number', 'ASC')
-                ->findAll();
-
-            // 🔹 Map entries by indicator_id
-            $entriesByIndicator = [];
-            foreach ($records as $record) {
-                $entriesByIndicator[$record['indicator_id']][] = $record;
-            }
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
 
             // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
 
@@ -262,7 +300,7 @@ class ReportsController extends ResourceController
             }
 
             // 🔹 Save the generated report
-            $fileName = 'SectionA_' . $barangay . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'SectionA_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
             $tempPath = WRITEPATH . 'reports/section_a/' . $fileName;
 
             if (!is_dir(WRITEPATH . 'reports')) {
@@ -299,61 +337,15 @@ class ReportsController extends ResourceController
     public function generateMaternalReport()
     {
         try {
-            $sectionId = $this->request->getPost('sectionSelect');
-            $year      = $this->request->getPost('report_year');
-            $quarter   = $this->request->getPost('report_quarter');
-            $barangay  = $this->request->getPost('barangay_code');
+            $data = $this->prepareReportData('B'); // Section B for maternal
 
-            // 🔹 Convert quarter to label
-            $quarterLabel = match ((int)$quarter) {
-                1 => '1ST',
-                2 => '2ND',
-                3 => '3RD',
-                4 => '4TH',
-                default => '',
-            };
-
-            // 🔹 Fetch barangay name
-            $barangaysModel = new \App\Models\BarangaysModel();
-            $barangayData = $barangaysModel->where('code', $barangay)->first();
-            $barangayName = $barangayData['name'] ?? $barangay;
-
-            // 🔹 Verify valid section
-            if (!isset($this->sectionModels[$sectionId])) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid section selected.']);
-            }
-
-            $modelClass = $this->sectionModels[$sectionId];
-            $model = new $modelClass();
-
-            // 🔹 Get months by quarter
-            $monthRanges = [
-                1 => [1, 2, 3],
-                2 => [4, 5, 6],
-                3 => [7, 8, 9],
-                4 => [10, 11, 12],
-            ];
-            $months = $monthRanges[$quarter] ?? [];
-
-            // 🔹 Fetch entries from EntriesMaternalModel
-            $records = $model
-                ->where('report_year', $year)
-                ->where('barangay_code', $barangay)
-                ->whereIn('report_month', $months)
-                ->findAll();
-
-            // 🔹 Fetch indicators for section B
-            $indicatorsModel = new \App\Models\IndicatorsModel();
-            $indicators = $indicatorsModel
-                ->where('section_code', 'B')
-                ->orderBy('order_number', 'ASC')
-                ->findAll();
-
-            // 🔹 Group entries by indicator_id
-            $entriesByIndicator = [];
-            foreach ($records as $record) {
-                $entriesByIndicator[$record['indicator_id']][] = $record;
-            }
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
 
             // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
 
@@ -428,7 +420,7 @@ class ReportsController extends ResourceController
             }
 
             // 🔹 Save report file
-            $fileName = 'SectionB_' . $barangay . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'SectionB_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
             $tempDir = WRITEPATH . 'reports/section_b/';
             if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
             $tempPath = $tempDir . $fileName;
@@ -449,10 +441,10 @@ class ReportsController extends ResourceController
 
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Maternal report generated successfully!',
+                'message' => 'Report generated successfully!',
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating Maternal report: ' . $e->getMessage());
+            log_message('error', 'Error generating report: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Error generating report: ' . $e->getMessage(),
@@ -460,64 +452,18 @@ class ReportsController extends ResourceController
         }
     }
 
-     public function generateChildReport()
+    public function generateChildReport()
     {
         try {
-            $sectionId = $this->request->getPost('sectionSelect');
-            $year      = $this->request->getPost('report_year');
-            $quarter   = $this->request->getPost('report_quarter');
-            $barangay  = $this->request->getPost('barangay_code');
+            $data = $this->prepareReportData('C'); // Section B for maternal
 
-            // 🔹 Convert quarter to label
-            $quarterLabel = match ((int)$quarter) {
-                1 => '1ST',
-                2 => '2ND',
-                3 => '3RD',
-                4 => '4TH',
-                default => '',
-            };
-
-            // 🔹 Fetch barangay name
-            $barangaysModel = new \App\Models\BarangaysModel();
-            $barangayData = $barangaysModel->where('code', $barangay)->first();
-            $barangayName = $barangayData['name'] ?? $barangay;
-
-            // 🔹 Verify valid section
-            if (!isset($this->sectionModels[$sectionId])) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid section selected.']);
-            }
-
-            $modelClass = $this->sectionModels[$sectionId];
-            $model = new $modelClass();
-
-            // 🔹 Get months by quarter
-            $monthRanges = [
-                1 => [1, 2, 3],
-                2 => [4, 5, 6],
-                3 => [7, 8, 9],
-                4 => [10, 11, 12],
-            ];
-            $months = $monthRanges[$quarter] ?? [];
-
-            // 🔹 Fetch entries from EntriesMaternalModel
-            $records = $model
-                ->where('report_year', $year)
-                ->where('barangay_code', $barangay)
-                ->whereIn('report_month', $months)
-                ->findAll();
-
-            // 🔹 Fetch indicators for section B
-            $indicatorsModel = new \App\Models\IndicatorsModel();
-            $indicators = $indicatorsModel
-                ->where('section_code', 'C')
-                ->orderBy('order_number', 'ASC')
-                ->findAll();
-
-            // 🔹 Group entries by indicator_id
-            $entriesByIndicator = [];
-            foreach ($records as $record) {
-                $entriesByIndicator[$record['indicator_id']][] = $record;
-            }
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
 
             // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
 
@@ -606,7 +552,7 @@ class ReportsController extends ResourceController
             }
 
             // 🔹 Save report file
-            $fileName = 'SectionC_' . $barangay . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'SectionC_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
             $tempDir = WRITEPATH . 'reports/section_c/';
             if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
             $tempPath = $tempDir . $fileName;
@@ -627,10 +573,10 @@ class ReportsController extends ResourceController
 
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Maternal report generated successfully!',
+                'message' => 'Report generated successfully!',
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating Maternal report: ' . $e->getMessage());
+            log_message('error', 'Error generating report: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Error generating report: ' . $e->getMessage(),
