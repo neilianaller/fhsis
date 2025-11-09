@@ -17,7 +17,6 @@ class IndicatorsModel extends Model
         'id',
         'code',
         'name',
-        'category_id',
         'subsection',
         'section_code'
     ];

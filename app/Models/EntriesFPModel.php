@@ -21,6 +21,7 @@ class EntriesFPModel extends Model
         'report_year',
         'agegroup',
         'user_type',
+        'subsection',
         'value',
         'created_at',
         'updated_at',

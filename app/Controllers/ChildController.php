@@ -18,22 +18,22 @@ class ChildController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $ca1Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category', 'ca1')
+            ->where('subsection', 'ca1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca2Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category', 'ca2')
+            ->where('subsection', 'ca2')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca3Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category', 'ca3')
+            ->where('subsection', 'ca3')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca4Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category', 'ca4')
+            ->where('subsection', 'ca4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
@@ -74,9 +74,9 @@ class ChildController extends ResourceController
         $barangay_code = $this->request->getPost('barangay_code');
         $report_month  = $this->request->getPost('report_month');
         $report_year   = $this->request->getPost('report_year');
-        $category   = $this->request->getPost('category');
+        $subsection   = $this->request->getPost('subsection');
         $indicatorId   = $this->request->getPost('indicatorId');
-        $entries       = $this->request->getPost('entries'); // array of { sex, category, value }
+        $entries       = $this->request->getPost('entries'); // array of { sex, subsection, value }
 
         if (!$barangay_code || !$report_month || !$report_year || !$entries) {
             return $this->response->setJSON([
@@ -91,7 +91,7 @@ class ChildController extends ResourceController
                 'report_month'  => $report_month,
                 'report_year'   => $report_year,
                 'sex'      => $entry['sex'],
-                'category'     => $category,
+                'subsection'     => $subsection,
                 'indicator_id'     => $indicatorId
             ])->first();
 
@@ -109,7 +109,7 @@ class ChildController extends ResourceController
                     'report_month'  => $report_month,
                     'report_year'   => $report_year,
                     'sex'      => $entry['sex'],
-                    'category'     => $category,
+                    'subsection'     => $subsection,
                     'value'         => $entry['value'],
                     'created_at'    => date('Y-m-d H:i:s'),
                     'updated_at'    => date('Y-m-d H:i:s')
@@ -132,12 +132,12 @@ class ChildController extends ResourceController
         $reportMonth  = $this->request->getGet('report_month');
         $reportYear   = $this->request->getGet('report_year');
         $indicator_id   = $this->request->getGet('indicator_id');
-        $category   = $this->request->getGet('category');
+        $subsection   = $this->request->getGet('subsection');
 
-        log_message('info', 'CATEGORY: ' . $category);
+        log_message('info', 'SUBSECTION: ' . $subsection);
 
         // Simple validation
-        if (!$category || !$reportMonth || !$reportYear) {
+        if (!$subsection || !$reportMonth || !$reportYear) {
             return $this->response->setStatusCode(400)->setJSON([
                 'status' => 'error',
                 'message' => 'Missing parameters.'
@@ -149,7 +149,7 @@ class ChildController extends ResourceController
             ->where('report_month', $reportMonth)
             ->where('report_year', $reportYear)
             ->where('indicator_id', $indicator_id)
-            ->where('category', $category)
+            ->where('subsection', $subsection)
             ->findAll();
 
         return $this->response->setJSON([

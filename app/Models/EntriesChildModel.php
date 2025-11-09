@@ -20,7 +20,7 @@ class EntriesChildModel extends Model
         'report_month',
         'report_year',
         'sex',
-        'category',
+        'subsection',
         'value',
         'created_at',
         'updated_at',

@@ -135,7 +135,7 @@
 
                                                     <div class="card-body">
 
-                                                        <form class="needs-validation entriesForm" data-category="ca1" novalidate>
+                                                        <form class="needs-validation entriesForm" data-subsection="ca1" novalidate>
 
                                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                                 <?php foreach ($ca1Indicators as $ca1indicator): ?>
@@ -153,11 +153,11 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Male</td>
-                                                                        <td><input type="number" class="form-control" data-sex="male" data-category="ca1"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="ca1"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Female</td>
-                                                                        <td><input type="number" class="form-control" data-sex="female" data-category="ca1"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="ca1"></td>
                                                                     </tr>
                                                                 </tbody>
                                                                 <tfoot>
@@ -192,7 +192,7 @@
 
                                                     <div class="card-body">
 
-                                                        <form class="needs-validation entriesForm" data-category="ca2" novalidate>
+                                                        <form class="needs-validation entriesForm" data-subsection="ca2" novalidate>
 
                                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                                 <?php foreach ($ca2Indicators as $ca2indicator): ?>
@@ -210,11 +210,11 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Male</td>
-                                                                        <td><input type="number" class="form-control" data-sex="male" data-category="ca2"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="ca2"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Female</td>
-                                                                        <td><input type="number" class="form-control" data-sex="female" data-category="ca2"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="ca2"></td>
                                                                     </tr>
                                                                 </tbody>
                                                                 <tfoot>
@@ -249,7 +249,7 @@
 
                                                     <div class="card-body">
 
-                                                        <form class="needs-validation entriesForm" data-category="ca3" novalidate>
+                                                        <form class="needs-validation entriesForm" data-subsection="ca3" novalidate>
 
                                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                                 <?php foreach ($ca3Indicators as $ca3indicator): ?>
@@ -267,11 +267,11 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Male</td>
-                                                                        <td><input type="number" class="form-control" data-sex="male" data-category="ca3"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="ca3"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Female</td>
-                                                                        <td><input type="number" class="form-control" data-sex="female" data-category="ca3"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="ca3"></td>
                                                                     </tr>
                                                                 </tbody>
                                                                 <tfoot>
@@ -306,7 +306,7 @@
 
                                                     <div class="card-body">
 
-                                                        <form class="needs-validation entriesForm" data-category="ca4" novalidate>
+                                                        <form class="needs-validation entriesForm" data-subsection="ca4" novalidate>
 
                                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                                 <?php foreach ($ca4Indicators as $ca4indicator): ?>
@@ -324,11 +324,11 @@
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Male</td>
-                                                                        <td><input type="number" class="form-control" data-sex="male" data-category="ca4"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="ca4"></td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Female</td>
-                                                                        <td><input type="number" class="form-control" data-sex="female" data-category="ca4"></td>
+                                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="ca4"></td>
                                                                     </tr>
                                                                 </tbody>
                                                                 <tfoot>
@@ -375,7 +375,7 @@
 
                                     <div class="card-body">
 
-                                        <form class="needs-validation entriesForm" data-category="cb" novalidate>
+                                        <form class="needs-validation entriesForm" data-subsection="cb" novalidate>
 
                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                 <?php foreach ($cbIndicators as $cbindicator): ?>
@@ -393,11 +393,11 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>Male</td>
-                                                        <td><input type="number" class="form-control" data-sex="male" data-category="cb"></td>
+                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="cb"></td>
                                                     </tr>
                                                     <tr>
                                                         <td>Female</td>
-                                                        <td><input type="number" class="form-control" data-sex="female" data-category="cb"></td>
+                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="cb"></td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot>
@@ -432,7 +432,7 @@
 
                                     <div class="card-body">
 
-                                        <form class="needs-validation entriesForm" data-category="cc" novalidate>
+                                        <form class="needs-validation entriesForm" data-subsection="cc" novalidate>
 
                                             <select id="indicator_id" name="indicator_id" class="mb-2 form-select btn btn-success dropdown-toggle">
                                                 <?php foreach ($ccIndicators as $ccindicator): ?>
@@ -450,11 +450,11 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>Male</td>
-                                                        <td><input type="number" class="form-control" data-sex="male" data-category="cc"></td>
+                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="cc"></td>
                                                     </tr>
                                                     <tr>
                                                         <td>Female</td>
-                                                        <td><input type="number" class="form-control" data-sex="female" data-category="cc"></td>
+                                                        <td><input type="number" class="form-control" data-sex="female" data-subsection="cc"></td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot>
@@ -507,7 +507,7 @@
             const month = $('#report_month').val();
             const year = $('#report_year').val();
             const indicator_id = form.find('select[name="indicator_id"]').val();
-            const category = form.data('category'); // scoped!
+            const subsection = form.data('subsection'); // scoped!
 
             $.ajax({
                 url: "<?= base_url('getChild'); ?>",
@@ -517,7 +517,7 @@
                     report_month: month,
                     report_year: year,
                     indicator_id: indicator_id,
-                    category: category
+                    subsection: subsection
                 },
                 success: function(response) {
                     if (response.status === 'success') {
@@ -525,7 +525,7 @@
                         form.find('table input[type="number"]').val(''); // clear current form only
 
                         entries.forEach(entry => {
-                            const input = form.find(`input[data-sex="${entry.sex}"][data-category="${entry.category}"]`);
+                            const input = form.find(`input[data-sex="${entry.sex}"][data-subsection="${entry.subsection}"]`);
                             if (input.length) {
                                 input.val(entry.value);
                                 input.trigger('input'); // recalc total
@@ -564,7 +564,7 @@
             e.preventDefault();
 
             const form = $(this);
-            const category = form.data('category'); // 👈 gets the data-category value
+            const subsection = form.data('subsection'); // 👈 gets the data-subsection value
             const barangay = $('#barangay_code').val();
             const month = $('#report_month').val();
             const year = $('#report_year').val();
@@ -590,7 +590,7 @@
                         barangay_code: barangay,
                         report_month: month,
                         report_year: year,
-                        category: category,
+                        subsection: subsection,
                         indicatorId: indicatorId,
                         entries: entries
                     },
@@ -655,7 +655,7 @@
     });
 
     $(document).ready(function() {
-        $('.entriesForm[data-category="ca4"]').each(function() {
+        $('.entriesForm[data-subsection="ca4"]').each(function() {
             let form = $(this);
 
             form.find('#indicator_id').on('change', function() {
