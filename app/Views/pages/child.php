@@ -658,20 +658,17 @@
         $('.entriesForm[data-category="ca4"]').each(function() {
             let form = $(this);
 
-            // When the dropdown changes
             form.find('#indicator_id').on('change', function() {
                 let selectedId = parseInt($(this).val());
-                const disableMaleFor = [103, 104];
+                const hideMaleFor = [103, 104];
 
-                // Find the male input only inside this form
-                let maleInput = form.find('input[data-sex="male"]');
+                // Get the male row (parent <tr>)
+                let maleRow = form.find('input[data-sex="male"]').closest('tr');
 
-                if (disableMaleFor.includes(selectedId)) {
-                    maleInput.prop('disabled', true);
-                    // Optional: clear the value when disabled
-                    // maleInput.val('');
+                if (hideMaleFor.includes(selectedId)) {
+                    maleRow.hide();
                 } else {
-                    maleInput.prop('disabled', false);
+                    maleRow.show();
                 }
             }).trigger('change'); // run once on load
         });
