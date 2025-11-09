@@ -891,4 +891,135 @@ class ReportsController extends ResourceController
             ]);
         }
     }
+
+    public function generateEnviReport()
+    {
+        try {
+            $data = $this->prepareReportData('F'); // Section B for maternal
+
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
+
+            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+
+            // 🔹 Load Excel template
+            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            if (!is_file($templateFile)) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+            }
+
+            $spreadsheet = IOFactory::load($templateFile);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 Fill header info
+            $sheet->setCellValue('E6', strtoupper($barangayName));
+            $sheet->setCellValue('H2', $year);
+            $sheet->setCellValue('E2',  $quarterLabel);
+
+            // 🔹 Define subsection mapping rules
+            $mapRules = [
+                'e1' => [
+                    1 => [
+                        'start_id' => 241,
+                        'start_row' => 12,
+                        'cols' => [
+                            'value' => 'B'  // all indicators under this map will go to col B, C, D sequentially
+                        ],
+                    ],
+                ],
+                'e2' => [
+                    1 => [
+                        'start_id' => 246,
+                        'start_row' => 12,
+                        'cols' => [
+                            'value' => 'N'
+                        ],
+                    ],
+                ],
+                'e3' => [
+                    1 => [
+                        'start_id' => 251,
+                        'start_row' => 19,
+                        'cols' => [
+                            'value' => 'B'
+                        ],
+                    ],
+                ],
+            ];
+
+
+            // 🔹 Fill indicator values
+            foreach ($indicators as $indicator) {
+                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
+                if (!isset($mapRules[$sub])) {
+                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+                    continue;
+                }
+                // Determine set 1 or 2 by comparing id ranges
+                $set = null;
+                foreach ($mapRules[$sub] as $s => $rule) {
+                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                    $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                        $set = $s;
+                        break;
+                    }
+                }
+                if (!$set) continue;
+
+                $rule = $mapRules[$sub][$set];
+                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+
+                $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                $sums = [];
+
+                foreach ($entries as $entry) {
+                    $value = (float)($entry['value'] ?? 0);
+                    $sums['value'] = ($sums['value'] ?? 0) + $value;
+                }
+
+
+                // Write totals
+                foreach ($sums as $col => $total) {
+                    $sheet->setCellValue($rule['cols']['value'] . $rowNum, $sums['value']);
+                }
+            }
+
+            // 🔹 Save report file
+            $fileName = 'SectionF_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $tempDir = WRITEPATH . 'reports/section_f/';
+            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+            $tempPath = $tempDir . $fileName;
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempPath);
+
+            // 🔹 Log report record
+            $reportLogsModel = new \App\Models\ReportsModel();
+            $reportLogsModel->insert([
+                'report_year'    => $year,
+                'report_quarter' => $quarter,
+                'barangay'       => $barangayName,
+                'section'        => 'F',
+                'filepath'       => $tempPath,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Report generated successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error generating report: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ]);
+        }
+    }
 }
