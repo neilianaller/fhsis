@@ -1022,4 +1022,134 @@ class ReportsController extends ResourceController
             ]);
         }
     }
+
+    public function generateIDiseaseReport()
+    {
+        try {
+            $data = $this->prepareReportData('G'); // Section B for maternal
+
+            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
+            $barangayName    = $data['barangayName'];
+            $year            = $data['year'];
+            $quarterLabel    = $data['quarterLabel'];
+            $quarter         = $data['quarter'];
+            $indicators      = $data['indicators'];
+            $entriesByIndicator = $data['entriesByIndicator'];
+
+            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+
+            // 🔹 Load Excel template
+            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            if (!is_file($templateFile)) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+            }
+
+            $spreadsheet = IOFactory::load($templateFile);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // 🔹 Fill header info
+            $sheet->setCellValue('G6', strtoupper($barangayName));
+            $sheet->setCellValue('J2', $year);
+            $sheet->setCellValue('G2',  $quarterLabel);
+
+            // 🔹 Define subsection mapping rules
+            $mapRules = [
+                'id1' => [
+                    1 => ['start_id' => 253, 'start_row' => 12, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 257, 'start_row' => 12, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id2' => [
+                    1 => ['start_id' => 261, 'start_row' => 17, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 276, 'start_row' => 17, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id3' => [
+                    1 => ['start_id' => 288, 'start_row' => 35, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 314, 'start_row' => 35, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id4' => [
+                    1 => ['start_id' => 339, 'start_row' => 64, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 357, 'start_row' => 64, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id5' => [
+                    1 => ['start_id' => 376, 'start_row' => 86, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 388, 'start_row' => 86, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id6' => [
+                    1 => ['start_id' => 400, 'start_row' => 99, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 402, 'start_row' => 99, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+            ];
+
+            // 🔹 Fill indicator values
+            foreach ($indicators as $indicator) {
+                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
+                if (!isset($mapRules[$sub])) {
+                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+                    continue;
+                }
+                // Determine set 1 or 2 by comparing id ranges
+                $set = null;
+                foreach ($mapRules[$sub] as $s => $rule) {
+                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                    $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                        $set = $s;
+                        break;
+                    }
+                }
+                if (!$set) continue;
+
+                $rule = $mapRules[$sub][$set];
+                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+
+                $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                $sums = [];
+
+                foreach ($entries as $entry) {
+                    $sex = trim($entry['sex']);
+                    $value    = $entry['value'] ?? 0;
+                    if (isset($rule['cols'][$sex])) {
+                        $col = $rule['cols'][$sex];
+                        $sums[$col] = ($sums[$col] ?? 0) + $value;
+                    }
+                }
+
+                // Write totals
+                foreach ($sums as $col => $total) {
+                    $sheet->setCellValue($col . $rowNum, $total);
+                }
+            }
+
+            // 🔹 Save report file
+            $fileName = 'SectionG_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $tempDir = WRITEPATH . 'reports/section_g/';
+            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+            $tempPath = $tempDir . $fileName;
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempPath);
+
+            // 🔹 Log report record
+            $reportLogsModel = new \App\Models\ReportsModel();
+            $reportLogsModel->insert([
+                'report_year'    => $year,
+                'report_quarter' => $quarter,
+                'barangay'       => $barangayName,
+                'section'        => 'G',
+                'filepath'       => $tempPath,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Report generated successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error generating report: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ]);
+        }
+    }
 }

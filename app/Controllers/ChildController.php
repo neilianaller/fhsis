@@ -18,22 +18,22 @@ class ChildController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $ca1Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category_id', '1')
+            ->where('category', 'ca1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca2Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category_id', '2')
+            ->where('category', 'ca2')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca3Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category_id', '3')
+            ->where('category', 'ca3')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ca4Indicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('category_id', '4')
+            ->where('category', 'ca4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 

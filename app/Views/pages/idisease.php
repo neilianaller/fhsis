@@ -426,10 +426,6 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>Male</td>
-                                                        <td><input type="number" class="form-control" data-sex="male" data-subsection="id6"></td>
-                                                    </tr>
-                                                    <tr>
                                                         <td>Female</td>
                                                         <td><input type="number" class="form-control" data-sex="female" data-subsection="id6"></td>
                                                     </tr>
