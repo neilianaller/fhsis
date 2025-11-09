@@ -45,6 +45,10 @@ $routes->post('generateFPReport', 'ReportsController::generateFPReport');
 $routes->post('generateMaternalReport', 'ReportsController::generateMaternalReport');
 $routes->post('generateChildReport', 'ReportsController::generateChildReport');
 $routes->post('generateOralReport', 'ReportsController::generateOralReport');
+$routes->post('generateNCDiseaseReport', 'ReportsController::generateNCDiseaseReport');
+$routes->post('generateEnviReport', 'ReportsController::generateEnviReport');
+$routes->post('generateIDisesaseReport', 'ReportsController::generateIDisesaseReport');
+$routes->post('generateAllReport', 'ReportsController::generateAllReport');
 
 $routes->resource('famplanning', ['controller' => 'FamPlanningController']);
 $routes->resource('maternal', ['controller' => 'MaternalController']);

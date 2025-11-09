@@ -18,47 +18,47 @@ class NCDiseaseController extends ResourceController
         $barangays = $BarangaysModel->findAll();
 
         $ncd1Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '11')
+            ->where('subsection', 'ncd1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd2Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '12')
+            ->where('subsection', 'ncd2')
             ->where('code !=', '2')
             ->where('code !=', '4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd3Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '13')
+            ->where('subsection', 'ncd3')
             ->where('code !=', '2')
             ->where('code !=', '4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd4Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '14')
+            ->where('subsection', 'ncd4')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd5Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '15')
+            ->where('subsection', 'ncd5')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd6Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '16')
+            ->where('subsection', 'ncd6')
             ->where('code !=', '1')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd7Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '17')
+            ->where('subsection', 'ncd7')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         $ncd8Indicators = $IndicatorsModel->where('section_code', 'E')
-            ->where('subsection', '18')
+            ->where('subsection', 'ncd8')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 

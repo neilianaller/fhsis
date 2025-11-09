@@ -862,7 +862,10 @@
                         form.find('table input[type="number"]').val(''); // clear current form only
 
                         entries.forEach(entry => {
-                            const input = form.find(`input[data-sex="${entry.sex}"][data-subsection="${entry.subsection}"]`);
+                            const input = form.find(
+                                `input[data-sex="${entry.sex}"][data-agegroup="${entry.agegroup}"][data-subsection="${entry.subsection}"]`
+                            );
+
                             if (input.length) {
                                 input.val(entry.value);
                                 input.trigger('input'); // recalc total
@@ -872,6 +875,7 @@
                         console.warn(response.message);
                     }
                 },
+
                 error: function(xhr) {
                     console.error("Error loading entries", xhr.responseText);
                 }
