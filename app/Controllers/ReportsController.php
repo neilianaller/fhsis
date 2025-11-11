@@ -124,27 +124,7 @@ class ReportsController extends ResourceController
             ->setFileName(basename($log['filepath']));
     }
 
-    protected $sectionModels = [
-        // Map section ID or code to model class
-        '1' => EntriesFPModel::class,
-        '2' => EntriesMaternalModel::class,
-        '3' => EntriesChildModel::class,
-        '4' => EntriesOralModel::class,
-        '5' => EntriesNCDiseaseModel::class,
-        '6' => EntriesEnviModel::class,
-        '7' => EntriesIDiseaseModel::class,
-    ];
 
-    protected $sectionModelsLetters = [
-        // Map section ID or code to model class
-        'A' => EntriesFPModel::class,
-        'B' => EntriesMaternalModel::class,
-        'C' => EntriesChildModel::class,
-        'D' => EntriesOralModel::class,
-        'E' => EntriesNCDiseaseModel::class,
-        'F' => EntriesEnviModel::class,
-        'G' => EntriesIDiseaseModel::class,
-    ];
 
     protected $sectionTemplates = [
         '1' => 'section_a.xlsx',
@@ -197,13 +177,9 @@ class ReportsController extends ResourceController
             ? 'LANTAPAN'
             : ($barangayData['name'] ?? $barangay);
 
-        // 🔹 Validate section
-        if (!isset($this->sectionModels[$sectionId])) {
-            throw new \Exception("Invalid section selected.");
-        }
+        
 
-        $modelClass = $this->sectionModels[$sectionId];
-        $model = new $modelClass();
+        $model = new \App\Models\EntriesModel();
 
         $builder = $model
             ->where('report_year', $year)
