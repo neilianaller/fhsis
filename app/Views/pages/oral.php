@@ -259,7 +259,7 @@
             const subsection = form.data('subsection'); // scoped!
 
             $.ajax({
-                url: "<?= base_url('getOral'); ?>",
+                url: "<?= base_url('get'); ?>/" + 'D',
                 method: "GET",
                 data: {
                     barangay_code: barangay,
@@ -352,7 +352,7 @@
             if (this.checkValidity()) {
 
                 $.ajax({
-                    url: "<?= base_url('saveOral'); ?>",
+                    url: "<?= base_url('save'); ?>/" + 'D',
                     type: "POST",
                     dataType: "json",
                     data: {

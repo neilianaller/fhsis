@@ -557,7 +557,7 @@
 
 
                 $.ajax({
-                    url: "<?= base_url('saveFP') ?>",
+                    url: "<?= base_url('save') ?>/" + 'A',
                     type: "POST",
                     dataType: "json",
                     data: {

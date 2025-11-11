@@ -7,26 +7,11 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\HTTP\Response;
 use CodeIgniter\RESTful\ResourceController;
 
-class FamPlanningController extends ResourceController
+class EntriesController extends ResourceController
 {
-    public function index(): string
+    public function index()
     {
-
-        $BarangaysModel = new \App\Models\BarangaysModel();
-        $IndicatorsModel = new \App\Models\IndicatorsModel();
-
-        $barangays = $BarangaysModel->findAll();
-        $fpIndicators = $IndicatorsModel->where('section_code', 'A')
-            ->where('code !=', '4')
-            ->where('code !=', '6')
-            ->where('code !=', '7')
-            ->orderBy('order_number', 'ASC')
-            ->findAll();
-
-        return view('pages/famplanning', [
-            'barangays' => $barangays,
-            'fpIndicators' => $fpIndicators
-        ]);
+        //
     }
 
 
@@ -35,7 +20,7 @@ class FamPlanningController extends ResourceController
      */
     protected $request;
 
-    public function save()
+    public function save($code)
     {
         $entriesModel = new \App\Models\EntriesModel();
 
@@ -67,13 +52,13 @@ class FamPlanningController extends ResourceController
                 // Update existing record
                 $entriesModel->update($existing['id'], [
                     'value'      => $entry['value'],
-                    'section_code'      => 'A',
+                    'section_code'      => $code,
                     'updated_at' => date('Y-m-d H:i:s')
                 ]);
             } else {
                 // Insert new record
                 $entriesModel->insert([
-                    'section_code'      => 'A',
+                    'section_code'      => $code,
                     'indicator_id' => $indicatorId,
                     'barangay_code' => $barangay_code,
                     'report_month'  => $report_month,
@@ -94,7 +79,7 @@ class FamPlanningController extends ResourceController
     }
 
 
-    public function get()
+    public function get($code)
     {
         $entriesModel = new \App\Models\EntriesModel();
 
@@ -116,7 +101,7 @@ class FamPlanningController extends ResourceController
             ->where('report_month', $reportMonth)
             ->where('report_year', $reportYear)
             ->where('indicator_id', $indicator_id)
-            ->where('section_code', 'A')
+            ->where('section_code', $code)
             ->findAll();
 
         return $this->response->setJSON([

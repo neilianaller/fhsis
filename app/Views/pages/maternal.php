@@ -333,7 +333,7 @@
             if (!barangay || !month || !year || !indicator_id) return;
 
             $.ajax({
-                url: "<?= base_url('getMaternal'); ?>",
+                url: "<?= base_url('get'); ?>/" + 'B',
                 method: "GET",
                 data: {
                     barangay_code: barangay,
@@ -406,7 +406,7 @@
             if (this.checkValidity()) {
 
                 $.ajax({
-                    url: "<?= base_url('saveMaternal'); ?>",
+                    url: "<?= base_url('save'); ?>/" + 'B',
                     type: "POST",
                     dataType: "json",
                     data: {

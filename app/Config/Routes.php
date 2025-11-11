@@ -15,26 +15,8 @@ $routes->resource('indicators', ['controller' => 'IndicatorsController']);
 
 $routes->post('sectionsList', 'SectionsController::sectionsList');
 
-$routes->post('saveFP', 'FamPlanningController::save');
-$routes->get('getFP', 'FamPlanningController::get');
-
-$routes->post('saveMaternal', 'MaternalController::save');
-$routes->get('getMaternal', 'MaternalController::get');
-
-$routes->post('saveChild', 'ChildController::save');
-$routes->get('getChild', 'ChildController::get');
-
-$routes->post('saveOral', 'OralController::save');
-$routes->get('getOral', 'OralController::get');
-
-$routes->post('saveNCDisease', 'NCDiseaseController::save');
-$routes->get('getNCDisease', 'NCDiseaseController::get');
-
-$routes->post('saveEnvi', 'EnviController::save');
-$routes->get('getEnvi', 'EnviController::get');
-
-$routes->post('saveIDisease', 'IDiseaseController::save');
-$routes->get('getIDisease', 'IDiseaseController::get');
+$routes->post('save/(:any)', to: 'EntriesController::save/$1');
+$routes->get('get/(:any)', 'EntriesController::get/$1');
 
 $routes->get('subsection/(:segment)', 'SubSectionsController::subsection/$1');
 

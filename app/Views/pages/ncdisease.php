@@ -847,7 +847,7 @@
             const subsection = form.data('subsection'); // scoped!
 
             $.ajax({
-                url: "<?= base_url('getNCDisease'); ?>",
+                url: "<?= base_url('get'); ?>/" + 'E',
                 method: "GET",
                 data: {
                     barangay_code: barangay,
@@ -928,7 +928,7 @@
             if (this.checkValidity()) {
 
                 $.ajax({
-                    url: "<?= base_url('saveNCDisease'); ?>",
+                    url: "<?= base_url('save'); ?>/" + 'E',
                     type: "POST",
                     dataType: "json",
                     data: {

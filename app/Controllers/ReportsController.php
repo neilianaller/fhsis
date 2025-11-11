@@ -1191,7 +1191,7 @@ class ReportsController extends ResourceController
 
         $allSectionsData = [];
 
-        foreach ($this->sectionModelsLetters as $sectionId => $modelClass) {
+        foreach ($this->sectionModels as $sectionCode => $modelClass) {
 
             $model = new $modelClass();
 
@@ -1204,23 +1204,62 @@ class ReportsController extends ResourceController
             }
 
             $records = $builder->findAll();
+            // log_message('info', "Section {$sectionCode} records fetched: " . count($records));
 
             $indicatorsModel = new \App\Models\IndicatorsModel();
             $indicators = $indicatorsModel
-                ->where('section_code', $sectionId)
+                // ->where('section_code', $sectionCode)  // match current section
+                ->whereIn('section_code', ['A', 'B'])
                 ->orderBy('order_number', 'ASC')
                 ->findAll();
 
-            // log_message('debug', "Section $sectionId indicators: " . print_r($indicators, true));
+
+            // log_message('info', "Section {$sectionCode} indicators fetched: " . count($indicators));
+
+
+
+            // log_message('debug', "Section $sectionCode indicators: " . print_r($indicators, true));
 
 
             $entriesByIndicator = [];
+
             foreach ($records as $record) {
-                $entriesByIndicator[$record['indicator_id']][] = $record;
+                if (!isset($record['indicator_id'])) {
+                    log_message(
+                        'error',
+                        "❌ Section {$sectionCode} record missing indicator_id:\n" .
+                            json_encode($record, JSON_PRETTY_PRINT)
+                    );
+                } else {
+                    $entriesByIndicator[$record['indicator_id']][] = $record;
+                }
             }
 
+            // 🧾 Pretty log all entries per indicator
+            // if (!empty($entriesByIndicator)) {
+            //     foreach ($entriesByIndicator as $indicatorId => $entries) {
+            //         log_message(
+            //             'info',
+            //             "🧩 Indicator ID: {$indicatorId}\n" .
+            //                 "📘 Section: {$sectionCode}\n" .
+            //                 "📊 Entries Count: " . count($entries) . "\n" .
+            //                 "🧾 Entries Data:\n" .
+            //                 json_encode($entries, JSON_PRETTY_PRINT)
+            //         );
+            //     }
+            // } else {
+            //     log_message('info', "⚠️ No entries found for Section {$sectionCode}");
+            // }
+
+
+            // // Optional: log all entries nicely
+            // foreach ($entriesByIndicator as $indicatorId => $entries) {
+            //     log_message('info', "Section {$sectionCode} → Indicator {$indicatorId} entries:\n" . json_encode($entries, JSON_PRETTY_PRINT));
+            // }
+
+
             // ✅ Collect section data
-            $allSectionsData[$sectionId] = [
+            $allSectionsData[$sectionCode] = [
                 'year'               => $year,
                 'quarter'            => $quarter,
                 'quarterLabel'       => $quarterLabel,
@@ -1246,12 +1285,12 @@ class ReportsController extends ResourceController
 
             $allSectionsData = $this->prepareAllReportData();
 
-            foreach ($allSectionsData as $sectionId => $data) {
+            foreach ($allSectionsData as $sectionCode => $data) {
 
                 if (empty($data['indicators'])) {
                     return $this->response->setJSON([
                         'status' => 'error',
-                        'message' => "No indicators found for section $sectionId"
+                        'message' => "No indicators found for section $sectionCode"
                     ]);
                 }
 
@@ -1261,21 +1300,21 @@ class ReportsController extends ResourceController
                 $quarterLabel    = $data['quarterLabel'];
                 $quarter         = $data['quarter'];
                 $indicators      = $data['indicators'];
-                $entriesByIndicator = $data['entriesByIndicator'];
+                $entries = $data['entries'];
 
-                // 🔹 Load Excel template
-                $templateFile = APPPATH . 'Views/pages/reports/section_all.xlsx';
-                if (!is_file($templateFile)) {
-                    return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
-                }
+                // // 🔹 Load Excel template
+                // $templateFile = APPPATH . 'Views/pages/reports/section_all.xlsx';
+                // if (!is_file($templateFile)) {
+                //     return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                // }
 
-                $spreadsheet = IOFactory::load($templateFile);
-                $sheet = $spreadsheet->getActiveSheet();
+                // $spreadsheet = IOFactory::load($templateFile);
+                // $sheet = $spreadsheet->getActiveSheet();
 
-                // 🔹 Fill header info
-                $sheet->setCellValue('G6', strtoupper($barangayName));
-                $sheet->setCellValue('J2', $year);
-                $sheet->setCellValue('G2',  $quarterLabel);
+                // // 🔹 Fill header info
+                // $sheet->setCellValue('G6', strtoupper($barangayName));
+                // $sheet->setCellValue('J2', $year);
+                // $sheet->setCellValue('G2',  $quarterLabel);
 
                 // 🔹 Define subsection mapping rules
                 $mapRules = [
@@ -1438,126 +1477,195 @@ class ReportsController extends ResourceController
                 ];
 
                 // 🔹 Fill indicator values
+                // foreach ($indicators as $indicator) {
+
+                //     $section = strtoupper($indicator['section_code']); // e.g., 'A', 'B', 'C', 'F', etc.
+
+                //     // log_message('info', "Indicator {$indicator['id']} has section_code={$indicator['section_code']} (upper={$section})");
+
+                //     $subKey  = strtolower(trim($indicator['subsection'] ?? '')); // for sections with subsections
+
+                //     if (!isset($mapRules[$section])) {
+                //         log_message('debug', "Skipping indicator {$indicator['id']} — unknown section {$section}");
+                //         continue;
+                //     }
+
+                //     $sectionMap = $mapRules[$section];
+
+                //     // Determine which map to use
+                //     if (in_array($section, ['A'])) {
+                //         // log_message('info', "Processing Section {$section}, Indicator ID: {$indicator['id']}, SubKey: {$subKey}");
+
+                //         // Section A uses user_type directly
+                //         $ruleMap = $sectionMap;
+                //         $rowBase = 15; // <-- adjust this to your actual first row number in Excel for Section A
+                //         $rowNum = $rowBase + ($indicator['order_number'] ?? 0);
+
+                //         // log_message('info', "Section A - Indicator {$indicator['id']} row: {$rowNum}");
+
+                //         if (!$rowNum) continue;
+
+                //         $sums = [];
+
+                //         foreach ($entriesByIndicator[$indicator['id']] ?? [] as $entry) {
+                //             $userType = trim($entry['user_type']);
+                //             $ageGroup = trim($entry['agegroup']);
+                //             $value    = $entry['value'] ?? 0;
+
+                //             if (isset($ruleMap[$userType][$ageGroup])) {
+                //                 $col = $ruleMap[$userType][$ageGroup];
+                //                 $sums[$col] = ($sums[$col] ?? 0) + $value;
+                //             }
+                //         }
+                //     }
+
+                //     if (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
+                //         // Sections with subsections
+                //         if (!isset($sectionMap[$subKey])) {
+                //             log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$subKey}");
+                //             continue;
+                //         }
+
+                //         // Determine set 1/2/3 etc. by comparing start_id ranges
+                //         $set = null;
+                //         foreach ($sectionMap[$subKey] as $s => $rule) {
+                //             $nextSet = $sectionMap[$subKey][$s + 1] ?? null;
+                //             $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+
+                //             if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                //                 $set = $s;
+                //                 break;
+                //             }
+                //         }
+                //         if (!$set) continue;
+
+                //         $rule   = $sectionMap[$subKey][$set];
+                //         $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                //         $sums   = [];
+
+                //         $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                //         $countEntries = count($entries);
+                //         log_message('info', "Section {$section} → Indicator {$indicator['id']} has {$countEntries} entries");
+
+                //         foreach ($entries as $entry) {
+                //             $sex      = trim($entry['sex'] ?? '');
+                //             $ageGroup = trim($entry['agegroup'] ?? '');
+                //             $value    = (float)($entry['value'] ?? 0);
+
+                //             // Build key depending on mapping style
+                //             if (!empty($sex) && !empty($ageGroup)) {
+                //                 $key = strtolower("{$sex}_{$ageGroup}");
+                //             } elseif (!empty($sex)) {
+                //                 $key = strtolower($sex);
+                //             } elseif (!empty($ageGroup)) {
+                //                 $key = strtolower($ageGroup);
+                //             } else {
+                //                 $key = 'value'; // For Section F
+                //             }
+
+                //             if (isset($rule['cols'][$key])) {
+                //                 $col = $rule['cols'][$key];
+                //                 $sums[$col] = ($sums[$col] ?? 0) + $value;
+                //             }
+                //         }
+                //     } elseif ($section === 'F') {
+                //         // Section F just sequential values
+                //         $subKey = strtolower($subKey ?: key($sectionMap));
+                //         $rule = $sectionMap[$subKey][1];
+                //         $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                //         $sums = [];
+                //         $values = $entriesByIndicator[$indicator['id']] ?? [];
+                //         $col = $rule['cols']['value'] ?? 'B';
+
+                //         foreach ($values as $i => $entry) {
+                //             // Sequentially fill B, C, D, ... depending on index
+                //             $colLetter = chr(ord($col) + $i);
+                //             $sums[$colLetter] = $entry['value'] ?? 0;
+                //         }
+                //     }
+
+                //     // log_message('info', "B–G Totals Check → Section {$section}, Indicator {$indicator['id']}, row {$rowNum}, sums: " . json_encode($sums));
+
+                //     // Write totals to Excel
+                //     foreach ($sums as $col => $total) {
+                //         $sheet->setCellValue($col . $rowNum, $total);
+                //     }
+                // }
+
+                $allEntries = [];
+
                 foreach ($indicators as $indicator) {
+                    $section = strtoupper($indicator['section_code']);
+                    // log_message('info', "Section variable: " . $section);
 
-                    $section = strtoupper($indicator['section_code']); // e.g., 'A', 'B', 'C', 'F', etc.
+                    $entriesByIndicator = $data['entriesByIndicator'];
 
-                    log_message('debug', 'Entries by Indicator: ' . print_r($entriesByIndicator, true));
+                    $entriesForIndicator = $entriesByIndicator[$indicator['id']] ?? [];
 
-                    $subKey  = strtolower(trim($indicator['subsection'] ?? '')); // for sections with subsections
+                    $allEntries = array_merge($allEntries, $entriesForIndicator);
 
-                    if (!isset($mapRules[$section])) {
-                        log_message('debug', "Skipping indicator {$indicator['id']} — unknown section {$section}");
-                        continue;
+                    log_message('info', "Section {$sectionCode} — All entries count: " . count($allEntries));
+
+
+                    // 🧾 Pretty log all entries per indicator
+                    if (!empty($entriesForIndicator)) {
+                        foreach ($entriesForIndicator as $indicatorId => $entries) {
+                            // log_message(
+                            //     'info',
+                            //     "🧩 Indicator ID: {$indicatorId}\n" .
+                            //         "📘 Section: {$sectionCode}\n" .
+                            //         "📊 Entries Count: " . count($entries) . "\n" .
+                            //         "🧾 Entries Data:\n" .
+                            //         json_encode($entries, JSON_PRETTY_PRINT)
+                            // );
+                        }
+                    } else {
+                        // log_message('info', "⚠️ No entries found for Section {$sectionCode}");
                     }
 
-                    $sectionMap = $mapRules[$section];
+                    // log_message(
+                    //     'info',
+                    //     "🧩 Indicator ID: {$indicator['id']}\n" .
+                    //         "📘 Section: {$indicator['section_code']}\n" .
+                    //         "📊 Entries Count: " . count($entriesForIndicator) . "\n" .
+                    //         "🧾 Entries Data:\n" . json_encode($entriesForIndicator, JSON_PRETTY_PRINT)
+                    // );
+                    // $countEntries = count($entriesForIndicator);
+                    // log_message('info', "Count of entriesForIndicator: " . $countEntries);
 
-                    // Determine which map to use
+
+
                     if (in_array($section, ['A'])) {
-                        // Section A uses user_type directly
-                        $ruleMap = $sectionMap;
-                        $rowNum  = $startRows[$indicator['id']] ?? null; // precomputed start rows
-                        if (!$rowNum) continue;
-
-                        $sums = [];
-                        foreach ($entriesByIndicator[$indicator['id']] ?? [] as $entry) {
-                            $userType = trim($entry['user_type']);
-                            $ageGroup = trim($entry['agegroup']);
-                            $value    = $entry['value'] ?? 0;
-
-                            if (isset($ruleMap[$userType][$ageGroup])) {
-                                $col = $ruleMap[$userType][$ageGroup];
-                                $sums[$col] = ($sums[$col] ?? 0) + $value;
-                            }
-                        }
+                        // log_message('info', "Processing Section A");
+                        // ...
                     } elseif (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
-                        // Sections with subsections
-                        if (!isset($sectionMap[$subKey])) {
-                            log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$subKey}");
-                            continue;
-                        }
-
-                        // Determine set 1/2/3 etc. by comparing start_id ranges
-                        $set = null;
-                        foreach ($sectionMap[$subKey] as $s => $rule) {
-                            $nextSet = $sectionMap[$subKey][$s + 1] ?? null;
-                            $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-
-                            if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
-                                $set = $s;
-                                break;
-                            }
-                        }
-                        if (!$set) continue;
-
-                        $rule   = $sectionMap[$subKey][$set];
-                        $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
-                        $sums   = [];
-
-                        foreach ($entriesByIndicator[$indicator['id']] ?? [] as $entry) {
-                            $sex      = trim($entry['sex'] ?? '');
-                            $ageGroup = trim($entry['agegroup'] ?? '');
-                            $value    = (float)($entry['value'] ?? 0);
-
-                            // Build key depending on mapping style
-                            if (!empty($sex) && !empty($ageGroup)) {
-                                $key = strtolower("{$sex}_{$ageGroup}");
-                            } elseif (!empty($sex)) {
-                                $key = strtolower($sex);
-                            } elseif (!empty($ageGroup)) {
-                                $key = strtolower($ageGroup);
-                            } else {
-                                $key = 'value'; // For Section F
-                            }
-
-                            if (isset($rule['cols'][$key])) {
-                                $col = $rule['cols'][$key];
-                                $sums[$col] = ($sums[$col] ?? 0) + $value;
-                            }
-                        }
+                        // log_message('info', "Processing Section B-G");
+                        // ...
                     } elseif ($section === 'F') {
-                        // Section F just sequential values
-                        $subKey = strtolower($subKey ?: key($sectionMap));
-                        $rule = $sectionMap[$subKey][1];
-                        $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
-                        $sums = [];
-                        $values = $entriesByIndicator[$indicator['id']] ?? [];
-                        $col = $rule['cols']['value'] ?? 'B';
-
-                        foreach ($values as $i => $entry) {
-                            // Sequentially fill B, C, D, ... depending on index
-                            $colLetter = chr(ord($col) + $i);
-                            $sums[$colLetter] = $entry['value'] ?? 0;
-                        }
-                    }
-
-                    // Write totals to Excel
-                    foreach ($sums as $col => $total) {
-                        $sheet->setCellValue($col . $rowNum, $total);
+                        // log_message('info', "Processing Section F");
+                        // ...
                     }
                 }
 
+                // // 🔹 Save report file
+                // $fileName = 'SectionALL_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+                // $tempDir = WRITEPATH . 'reports/section_all/';
+                // if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+                // $tempPath = $tempDir . $fileName;
 
-                // 🔹 Save report file
-                $fileName = 'SectionALL_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-                $tempDir = WRITEPATH . 'reports/section_all/';
-                if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-                $tempPath = $tempDir . $fileName;
+                // $writer = new Xlsx($spreadsheet);
+                // $writer->save($tempPath);
 
-                $writer = new Xlsx($spreadsheet);
-                $writer->save($tempPath);
-
-                // 🔹 Log report record
-                $reportLogsModel = new \App\Models\ReportsModel();
-                $reportLogsModel->insert([
-                    'report_year'    => $year,
-                    'report_quarter' => $quarter,
-                    'barangay'       => $barangayName,
-                    'section'        => 'ALL',
-                    'filepath'       => $tempPath,
-                    'created_at'     => date('Y-m-d H:i:s'),
-                ]);
+                // // 🔹 Log report record
+                // $reportLogsModel = new \App\Models\ReportsModel();
+                // $reportLogsModel->insert([
+                //     'report_year'    => $year,
+                //     'report_quarter' => $quarter,
+                //     'barangay'       => $barangayName,
+                //     'section'        => 'ALL',
+                //     'filepath'       => $tempPath,
+                //     'created_at'     => date('Y-m-d H:i:s'),
+                // ]);
 
                 return $this->response->setJSON([
                     'status'  => 'success',
