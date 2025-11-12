@@ -75,7 +75,7 @@
                                             <?= $section['code'] . '. ' . $section['name']; ?>
                                         </option>
                                     <?php endforeach; ?>
-                                    <option value="allsections">ALL SECTIONS</option>
+                                    <option value="all">ALL SECTIONS</option>
                                 </select>
                             </div>
 
@@ -226,7 +226,7 @@
                 case 'G': // Section B
                     ajaxUrl = "<?= base_url('generateIDiseaseReport') ?>";
                     break;
-                case 'allsections': // Section B
+                case 'all': // Section B
                     ajaxUrl = "<?= base_url('generateAllReport') ?>";
                     break;
                     // Add more sections if needed
