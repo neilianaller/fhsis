@@ -71,7 +71,7 @@
                                 <label for="sectionSelect" class="col-form-label">select section</label>
                                 <select class="form-select" id="sectionSelect" name="sectionSelect">
                                     <?php foreach ($sections as $section): ?>
-                                        <option value="<?= $section['id']; ?>">
+                                        <option value="<?= $section['code']; ?>">
                                             <?= $section['code'] . '. ' . $section['name']; ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -205,25 +205,25 @@
             // 🔹 Determine AJAX URL based on section
             let ajaxUrl = '';
             switch (section) {
-                case '1': // Section A
+                case 'A': // Section A
                     ajaxUrl = "<?= base_url('generateFPReport') ?>";
                     break;
-                case '2': // Section B
+                case 'B': // Section B
                     ajaxUrl = "<?= base_url('generateMaternalReport') ?>";
                     break;
-                case '3': // Section B
+                case 'C': // Section B
                     ajaxUrl = "<?= base_url('generateChildReport') ?>";
                     break;
-                case '4': // Section B
+                case 'D': // Section B
                     ajaxUrl = "<?= base_url('generateOralReport') ?>";
                     break;
-                case '5': // Section B
+                case 'E': // Section B
                     ajaxUrl = "<?= base_url('generateNCDiseaseReport') ?>";
                     break;
-                case '6': // Section B
+                case 'F': // Section B
                     ajaxUrl = "<?= base_url('generateEnviReport') ?>";
                     break;
-                case '7': // Section B
+                case 'G': // Section B
                     ajaxUrl = "<?= base_url('generateIDiseaseReport') ?>";
                     break;
                 case 'allsections': // Section B

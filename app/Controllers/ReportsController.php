@@ -124,19 +124,6 @@ class ReportsController extends ResourceController
             ->setFileName(basename($log['filepath']));
     }
 
-
-
-    protected $sectionTemplates = [
-        '1' => 'section_a.xlsx',
-        '2' => 'section_b.xlsx',
-        '3' => 'section_c.xlsx',
-        '4' => 'section_d.xlsx',
-        '5' => 'section_e.xlsx',
-        '6' => 'section_f.xlsx',
-        '7' => 'section_g.xlsx',
-        'allsections' => 'section_all.xlsx',
-    ];
-
     /**
      * @var IncomingRequest
      */
@@ -148,8 +135,8 @@ class ReportsController extends ResourceController
         $year     = $this->request->getPost('report_year');
         $quarter  = $this->request->getPost('report_quarter');
         $barangay = $this->request->getPost('barangay_code');
-        $sectionId = $this->request->getPost('sectionSelect');
 
+        log_message('info', 'YEAR: ' . $year . '. QUARTER ' . $quarter . '. SECTION CODE: ' . $sectionCode);
         // 🔹 Convert quarter → label
         $quarterLabel = match ((int)$quarter) {
             1 => '1ST',
@@ -177,13 +164,14 @@ class ReportsController extends ResourceController
             ? 'LANTAPAN'
             : ($barangayData['name'] ?? $barangay);
 
-        
+
 
         $model = new \App\Models\EntriesModel();
 
         $builder = $model
             ->where('report_year', $year)
-            ->whereIn('report_month', $months);
+            ->whereIn('report_month', $months)
+            ->where('section_code', $sectionCode);
 
         if ($barangay !== 'allbgy') {
             $builder->where('barangay_code', $barangay);
@@ -194,51 +182,69 @@ class ReportsController extends ResourceController
 
         // 🔹 Fetch indicators
         $indicatorsModel = new \App\Models\IndicatorsModel();
+
         $indicators = $indicatorsModel
             ->where('section_code', $sectionCode)
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
         // 🔹 Group entries by indicator
-        $entriesByIndicator = [];
+        $entries = [];
         foreach ($records as $record) {
-            $entriesByIndicator[$record['indicator_id']][] = $record;
+            $entries[] = [
+                'indicator_id'  => $record['indicator_id'],
+                'barangay_code' => $record['barangay_code'],
+                'report_month'  => $record['report_month'],
+                'report_year'   => $record['report_year'],
+                'section_code'  => $record['section_code'],
+                'subsection'    => $record['subsection'],
+                'sex'           => $record['sex'],
+                'agegroup'      => $record['agegroup'],
+                'user_type'     => $record['user_type'],
+                'value'         => $record['value'],
+            ];
         }
+
+        log_message('info', 'Total entries fetched: ' . count($entries));
 
         // 🔹 Return all as one structured array
         return [
-            'year'               => $year,
-            'quarter'            => $quarter,
-            'quarterLabel'       => $quarterLabel,
-            'barangayCode'       => $barangay,
-            'barangayName'       => $barangayName,
-            'model'              => $model,
-            'entries'            => $records,
-            'indicators'         => $indicators,
-            'entriesByIndicator' => $entriesByIndicator,
+            'year'         => $year,
+            'quarter'      => $quarter,
+            'quarterLabel' => $quarterLabel,
+            'barangayCode' => $barangay,
+            'barangayName' => $barangayName,
+            'model'        => $model,
+            'entries'      => $entries,     // ✅ simplified
+            'indicators'   => $indicators,
         ];
     }
 
     public function generateFPReport()
     {
         try {
-            $data = $this->prepareReportData('A'); // Section B for maternal
+            $data = $this->prepareReportData('A');
 
-            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
-            $barangayName    = $data['barangayName'];
-            $year            = $data['year'];
-            $quarterLabel    = $data['quarterLabel'];
-            $quarter         = $data['quarter'];
-            $indicators      = $data['indicators'];
-            $entriesByIndicator = $data['entriesByIndicator'];
+            $barangayName  = $data['barangayName'];
+            $year          = $data['year'];
+            $quarterLabel  = $data['quarterLabel'];
+            $quarter       = $data['quarter'];
+            $indicators    = $data['indicators'];
+            $entries       = $data['entries'];
 
-            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
-
+            // 🔹 Log count for debugging
+            log_message('info', sprintf(
+                'Generating FP Report | Barangay: %s | Year: %s | Quarter: %s | Entries: %d',
+                $barangayName,
+                $year,
+                $quarterLabel,
+                count($entries)
+            ));
 
             // 🔹 Load Excel template
-            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            $templateFile = APPPATH . 'Views/pages/reports/section_a.xlsx';
             if (!is_file($templateFile)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                throw new \Exception('Template not found: ' . basename($templateFile));
             }
 
             $spreadsheet = IOFactory::load($templateFile);
@@ -247,13 +253,14 @@ class ReportsController extends ResourceController
             // 🔹 Fill template header cells
             $sheet->setCellValue('G6', strtoupper($barangayName));
             $sheet->setCellValue('J2', $year);
-            $sheet->setCellValue('G2',  $quarterLabel);
+            $sheet->setCellValue('G2', $quarterLabel);
 
-            // 🔹 Define Excel rows, skipping 19, 23, 26
+            // 🔹 Define Excel rows, skipping none (you can modify skip list if needed)
             $startRow = 16;
             $skipRows = [];
             $excelRows = [];
             $row = $startRow;
+
             foreach ($indicators as $indicator) {
                 while (in_array($row, $skipRows)) {
                     $row++;
@@ -272,22 +279,28 @@ class ReportsController extends ResourceController
                 'new_acceptor_present'    => ['10-14' => 'V', '15-19' => 'W', '20-49' => 'X'],
             ];
 
+            // 🔹 Group entries by indicator for summation
+            $entriesByIndicator = [];
+            foreach ($entries as $entry) {
+                $entriesByIndicator[$entry['indicator_id']][] = $entry;
+            }
+
             // 🔹 Fill indicator rows
             foreach ($indicators as $indicator) {
                 $rowNum = $excelRows[$indicator['id']] ?? null;
                 if (!$rowNum) continue;
 
-                $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                $indicatorEntries = $entriesByIndicator[$indicator['id']] ?? [];
                 $sums = []; // column => total
 
-                foreach ($entries as $entry) {
+                foreach ($indicatorEntries as $entry) {
                     $userType = trim($entry['user_type']);
                     $ageGroup = trim($entry['agegroup']);
                     $value    = $entry['value'] ?? 0;
 
                     if (isset($columnMap[$userType][$ageGroup])) {
                         $col = $columnMap[$userType][$ageGroup];
-                        $sums[$col] = ($sums[$col] ?? 0) + $value; // sum all months
+                        $sums[$col] = ($sums[$col] ?? 0) + $value;
                     }
                 }
 
@@ -298,59 +311,78 @@ class ReportsController extends ResourceController
             }
 
             // 🔹 Save the generated report
-            $fileName = 'SectionA_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-            $tempPath = WRITEPATH . 'reports/section_a/' . $fileName;
+            $fileName = sprintf(
+                'SectionA_%s_Q%s_%s_%s.xlsx',
+                $barangayName,
+                $quarter,
+                $year,
+                date('Ymd_His')
+            );
 
-            if (!is_dir(WRITEPATH . 'reports')) {
-                mkdir(WRITEPATH . 'reports', 0777, true);
+            $dirPath = WRITEPATH . 'reports/section_a/';
+            if (!is_dir($dirPath)) {
+                mkdir($dirPath, 0777, true);
             }
+
+            $tempPath = $dirPath . $fileName;
 
             $writer = new Xlsx($spreadsheet);
             $writer->save($tempPath);
 
-            // 🔹 Save log to database
+            // 🔹 Log to database
             $reportLogsModel = new \App\Models\ReportsModel();
             $reportLogsModel->insert([
                 'report_year'    => $year,
                 'report_quarter' => $quarter,
                 'barangay'       => $barangayName,
-                'section' => 'A',
+                'section'        => 'A',
                 'filepath'       => $tempPath,
                 'created_at'     => date('Y-m-d H:i:s'),
             ]);
 
-            // ✅ Return success with file URL
+            // ✅ Return success
             return $this->response->setJSON([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Report generated successfully!',
             ]);
         } catch (\Throwable $e) {
+            // 🔹 Log error and show properly in the view
+            log_message('error', 'Error generating FP report: ' . $e->getMessage());
+
             return $this->response->setJSON([
-                'status' => 'error',
-                'message' => 'Error generating report: ' . $e->getMessage()
-            ]);
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ])->setStatusCode(500);
         }
     }
+
 
     public function generateMaternalReport()
     {
         try {
-            $data = $this->prepareReportData('B'); // Section B for maternal
+            // 🔹 Load Section B (Maternal)
+            $data = $this->prepareReportData('B');
 
-            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
-            $barangayName    = $data['barangayName'];
-            $year            = $data['year'];
-            $quarterLabel    = $data['quarterLabel'];
-            $quarter         = $data['quarter'];
-            $indicators      = $data['indicators'];
-            $entriesByIndicator = $data['entriesByIndicator'];
+            $barangayName  = $data['barangayName'];
+            $year          = $data['year'];
+            $quarterLabel  = $data['quarterLabel'];
+            $quarter       = $data['quarter'];
+            $indicators    = $data['indicators'];
+            $entries       = $data['entries'];
 
-            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+            // 🔹 Log count for quick debugging
+            log_message('info', sprintf(
+                'Generating Maternal Report | Barangay: %s | Year: %s | Quarter: %s | Entries: %d',
+                $barangayName,
+                $year,
+                $quarterLabel,
+                count($entries)
+            ));
 
             // 🔹 Load Excel template
-            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            $templateFile = APPPATH . 'Views/pages/reports/section_b.xlsx';
             if (!is_file($templateFile)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                throw new \Exception('Template not found: ' . basename($templateFile));
             }
 
             $spreadsheet = IOFactory::load($templateFile);
@@ -359,9 +391,9 @@ class ReportsController extends ResourceController
             // 🔹 Fill header info
             $sheet->setCellValue('G6', strtoupper($barangayName));
             $sheet->setCellValue('J2', $year);
-            $sheet->setCellValue('G2',  $quarterLabel);
+            $sheet->setCellValue('G2', $quarterLabel);
 
-            // 🔹 Define subsection mapping rules
+            // 🔹 Define subsection mapping
             $mapRules = [
                 'b1' => [
                     1 => ['start_id' => 17, 'start_row' => 12, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D']],
@@ -377,56 +409,65 @@ class ReportsController extends ResourceController
                 ],
             ];
 
-            // 🔹 Fill indicator values
-            foreach ($indicators as $indicator) {
-                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
-                if (!isset($mapRules[$sub])) {
-                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+            // 🔹 Iterate through entries directly (no grouping)
+            foreach ($entries as $entry) {
+                $indicatorId = $entry['indicator_id'];
+                $subsection  = $entry['subsection']; // already lowercase
+                $ageGroup    = $entry['agegroup'];
+                $value       = (float)($entry['value'] ?? 0);
+
+                // Skip unknown subsections
+                if (!isset($mapRules[$subsection])) {
                     continue;
                 }
-                // Determine set 1 or 2 by comparing id ranges
+
+                // Determine set (1 or 2)
                 $set = null;
-                foreach ($mapRules[$sub] as $s => $rule) {
-                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                foreach ($mapRules[$subsection] as $s => $rule) {
+                    $nextSet   = $mapRules[$subsection][$s + 1] ?? null;
                     $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                    if ($indicatorId >= $rule['start_id'] && $indicatorId < $nextStart) {
                         $set = $s;
                         break;
                     }
                 }
                 if (!$set) continue;
 
-                $rule = $mapRules[$sub][$set];
-                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                $rule = $mapRules[$subsection][$set];
+                $rowNum = $rule['start_row'] + ($indicatorId - $rule['start_id']);
 
-                $entries = $entriesByIndicator[$indicator['id']] ?? [];
-                $sums = [];
-
-                foreach ($entries as $entry) {
-                    $ageGroup = trim($entry['agegroup']);
-                    $value    = $entry['value'] ?? 0;
-                    if (isset($rule['cols'][$ageGroup])) {
-                        $col = $rule['cols'][$ageGroup];
-                        $sums[$col] = ($sums[$col] ?? 0) + $value;
-                    }
+                // Check if column for this age group exists
+                if (!isset($rule['cols'][$ageGroup])) {
+                    continue;
                 }
 
-                // Write totals
-                foreach ($sums as $col => $total) {
-                    $sheet->setCellValue($col . $rowNum, $total);
-                }
+                $col = $rule['cols'][$ageGroup];
+
+                // Get current cell value (if any)
+                $currentValue = (float)($sheet->getCell($col . $rowNum)->getValue() ?? 0);
+                $sheet->setCellValue($col . $rowNum, $currentValue + $value);
             }
 
-            // 🔹 Save report file
-            $fileName = 'SectionB_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-            $tempDir = WRITEPATH . 'reports/section_b/';
-            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-            $tempPath = $tempDir . $fileName;
+            // 🔹 Save the generated report
+            $fileName = sprintf(
+                'SectionB_%s_Q%s_%s_%s.xlsx',
+                preg_replace('/\s+/', '_', $barangayName),
+                $quarter,
+                $year,
+                date('Ymd_His')
+            );
+
+            $dirPath = WRITEPATH . 'reports/section_b/';
+            if (!is_dir($dirPath)) {
+                mkdir($dirPath, 0777, true);
+            }
+
+            $tempPath = $dirPath . $fileName;
 
             $writer = new Xlsx($spreadsheet);
             $writer->save($tempPath);
 
-            // 🔹 Log report record
+            // 🔹 Log to database
             $reportLogsModel = new \App\Models\ReportsModel();
             $reportLogsModel->insert([
                 'report_year'    => $year,
@@ -437,38 +478,49 @@ class ReportsController extends ResourceController
                 'created_at'     => date('Y-m-d H:i:s'),
             ]);
 
+            // ✅ Success response
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Report generated successfully!',
+                'message' => 'Maternal report generated successfully!',
+                'file'    => $tempPath,
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating report: ' . $e->getMessage());
+            // 🔹 Error logging
+            log_message('error', 'Error generating Maternal report: ' . $e->getMessage());
+
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Error generating report: ' . $e->getMessage(),
-            ]);
+                'message' => 'Error generating Maternal report: ' . $e->getMessage(),
+            ])->setStatusCode(500);
         }
     }
+
 
     public function generateChildReport()
     {
         try {
-            $data = $this->prepareReportData('C'); // Section B for maternal
+            $data = $this->prepareReportData('C');
 
-            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
-            $barangayName    = $data['barangayName'];
-            $year            = $data['year'];
-            $quarterLabel    = $data['quarterLabel'];
-            $quarter         = $data['quarter'];
-            $indicators      = $data['indicators'];
-            $entriesByIndicator = $data['entriesByIndicator'];
+            $barangayName  = $data['barangayName'];
+            $year          = $data['year'];
+            $quarterLabel  = $data['quarterLabel'];
+            $quarter       = $data['quarter'];
+            $indicators    = $data['indicators'];
+            $entries       = $data['entries'];
 
-            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+            // 🔹 Log count for quick debugging
+            log_message('info', sprintf(
+                'Generating CHILD Report | Barangay: %s | Year: %s | Quarter: %s | Entries: %d',
+                $barangayName,
+                $year,
+                $quarterLabel,
+                count($entries)
+            ));
 
             // 🔹 Load Excel template
-            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            $templateFile = APPPATH . 'Views/pages/reports/section_c.xlsx';
             if (!is_file($templateFile)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                throw new \Exception('Template not found: ' . basename($templateFile));
             }
 
             $spreadsheet = IOFactory::load($templateFile);
@@ -477,7 +529,7 @@ class ReportsController extends ResourceController
             // 🔹 Fill header info
             $sheet->setCellValue('G6', strtoupper($barangayName));
             $sheet->setCellValue('J2', $year);
-            $sheet->setCellValue('G2',  $quarterLabel);
+            $sheet->setCellValue('G2', $quarterLabel);
 
             // 🔹 Define subsection mapping rules
             $mapRules = [
@@ -509,56 +561,65 @@ class ReportsController extends ResourceController
                 ],
             ];
 
-            // 🔹 Fill indicator values
-            foreach ($indicators as $indicator) {
-                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
-                if (!isset($mapRules[$sub])) {
-                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
+            // 🔹 Iterate through entries directly (no grouping)
+            foreach ($entries as $entry) {
+                $indicatorId = $entry['indicator_id'];
+                $subsection  = $entry['subsection']; // already lowercase
+                $sex    = $entry['sex'];
+                $value       = (float)($entry['value'] ?? 0);
+
+                // Skip unknown subsections
+                if (!isset($mapRules[$subsection])) {
                     continue;
                 }
-                // Determine set 1 or 2 by comparing id ranges
+
+                // Determine set (1 or 2)
                 $set = null;
-                foreach ($mapRules[$sub] as $s => $rule) {
-                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                foreach ($mapRules[$subsection] as $s => $rule) {
+                    $nextSet   = $mapRules[$subsection][$s + 1] ?? null;
                     $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                    if ($indicatorId >= $rule['start_id'] && $indicatorId < $nextStart) {
                         $set = $s;
                         break;
                     }
                 }
                 if (!$set) continue;
 
-                $rule = $mapRules[$sub][$set];
-                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                $rule = $mapRules[$subsection][$set];
+                $rowNum = $rule['start_row'] + ($indicatorId - $rule['start_id']);
 
-                $entries = $entriesByIndicator[$indicator['id']] ?? [];
-                $sums = [];
-
-                foreach ($entries as $entry) {
-                    $sex = trim($entry['sex']);
-                    $value    = $entry['value'] ?? 0;
-                    if (isset($rule['cols'][$sex])) {
-                        $col = $rule['cols'][$sex];
-                        $sums[$col] = ($sums[$col] ?? 0) + $value;
-                    }
+                // Check if column for this age group exists
+                if (!isset($rule['cols'][$sex])) {
+                    continue;
                 }
 
-                // Write totals
-                foreach ($sums as $col => $total) {
-                    $sheet->setCellValue($col . $rowNum, $total);
-                }
+                $col = $rule['cols'][$sex];
+
+                // Get current cell value (if any)
+                $currentValue = (float)($sheet->getCell($col . $rowNum)->getValue() ?? 0);
+                $sheet->setCellValue($col . $rowNum, $currentValue + $value);
             }
 
-            // 🔹 Save report file
-            $fileName = 'SectionC_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-            $tempDir = WRITEPATH . 'reports/section_c/';
-            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-            $tempPath = $tempDir . $fileName;
+            // 🔹 Save the generated report
+            $fileName = sprintf(
+                'SectionC_%s_Q%s_%s_%s.xlsx',
+                preg_replace('/\s+/', '_', $barangayName),
+                $quarter,
+                $year,
+                date('Ymd_His')
+            );
+
+            $dirPath = WRITEPATH . 'reports/section_c/';
+            if (!is_dir($dirPath)) {
+                mkdir($dirPath, 0777, true);
+            }
+
+            $tempPath = $dirPath . $fileName;
 
             $writer = new Xlsx($spreadsheet);
             $writer->save($tempPath);
 
-            // 🔹 Log report record
+            // 🔹 Log to database
             $reportLogsModel = new \App\Models\ReportsModel();
             $reportLogsModel->insert([
                 'report_year'    => $year,
@@ -569,128 +630,131 @@ class ReportsController extends ResourceController
                 'created_at'     => date('Y-m-d H:i:s'),
             ]);
 
+            // ✅ Success response
             return $this->response->setJSON([
                 'status'  => 'success',
                 'message' => 'Report generated successfully!',
+                'file'    => $tempPath,
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating report: ' . $e->getMessage());
+            // 🔹 Error logging
+            log_message('error', 'Error generating Maternal report: ' . $e->getMessage());
+
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Error generating report: ' . $e->getMessage(),
-            ]);
+                'message' => 'Error generating Maternal report: ' . $e->getMessage(),
+            ])->setStatusCode(500);
         }
     }
 
     public function generateOralReport()
     {
         try {
-            $data = $this->prepareReportData('D'); // Section B for maternal
+            $data = $this->prepareReportData('D');
 
-            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
-            $barangayName    = $data['barangayName'];
-            $year            = $data['year'];
-            $quarterLabel    = $data['quarterLabel'];
-            $quarter         = $data['quarter'];
-            $indicators      = $data['indicators'];
-            $entriesByIndicator = $data['entriesByIndicator'];
+            $barangayName  = $data['barangayName'];
+            $year          = $data['year'];
+            $quarterLabel  = $data['quarterLabel'];
+            $quarter       = $data['quarter'];
+            $indicators    = $data['indicators'];
+            $entries       = $data['entries'];
 
-            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+            // 🔹 Log entries count
+            log_message('info', sprintf(
+                'Generating ORAL Report | Barangay: %s | Year: %s | Quarter: %s | Entries: %d',
+                $barangayName,
+                $year,
+                $quarterLabel,
+                count($entries)
+            ));
 
             // 🔹 Load Excel template
-            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            $templateFile = APPPATH . 'Views/pages/reports/section_d.xlsx';
             if (!is_file($templateFile)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                throw new \Exception('Template not found: ' . basename($templateFile));
             }
 
             $spreadsheet = IOFactory::load($templateFile);
             $sheet = $spreadsheet->getActiveSheet();
 
-            // 🔹 Fill header info
+            // 🔹 Fill header
             $sheet->setCellValue('G6', strtoupper($barangayName));
             $sheet->setCellValue('J2', $year);
-            $sheet->setCellValue('G2',  $quarterLabel);
+            $sheet->setCellValue('G2', $quarterLabel);
 
-            // 🔹 Define subsection mapping rules
+            // 🔹 Mapping rules (subsection => sets => columns)
             $mapRules = [
                 'o1' => [
                     1 => ['start_id' => 139, 'start_row' => 12, 'cols' => ['male' => 'B', 'female' => 'C']],
                     2 => ['start_id' => 155, 'start_row' => 12, 'cols' => ['male' => 'P', 'female' => 'Q']],
                 ],
                 'o2' => [
-                    1 => ['start_id' => 170, 'start_row' => 30, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-59' => 'D']],
-                    2 => ['start_id' => 173, 'start_row' => 30, 'cols' => ['10-14' => 'P', '15-19' => 'Q', '20-59' => 'R']],
+                    1 => ['start_id' => 170, 'start_row' => 30, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D']],
+                    2 => ['start_id' => 173, 'start_row' => 30, 'cols' => ['10-14' => 'P', '15-19' => 'Q', '20-49' => 'R']],
                 ],
             ];
 
-            // 🔹 Fill indicator values
-            foreach ($indicators as $indicator) {
-                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
-                if (!isset($mapRules[$sub])) {
-                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
-                    continue;
-                }
-                // Determine set 1 or 2 by comparing id ranges
+            // 🔹 Iterate entries
+            foreach ($entries as $entry) {
+                $indicatorId = $entry['indicator_id'];
+                $subsection  = $entry['subsection']; // lowercase
+                $ageGroup    = $entry['agegroup'];
+                $sex         = $entry['sex'] ?? null;
+                $value       = (float)($entry['value'] ?? 0);
+
+                // Skip unknown subsections
+                if (!isset($mapRules[$subsection])) continue;
+
+                // Determine set (1 or 2)
                 $set = null;
-                foreach ($mapRules[$sub] as $s => $rule) {
-                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                foreach ($mapRules[$subsection] as $s => $rule) {
+                    $nextSet   = $mapRules[$subsection][$s + 1] ?? null;
                     $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                    if ($indicatorId >= $rule['start_id'] && $indicatorId < $nextStart) {
                         $set = $s;
                         break;
                     }
                 }
                 if (!$set) continue;
 
-                $rule = $mapRules[$sub][$set];
-                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                $rule = $mapRules[$subsection][$set];
+                $rowNum = $rule['start_row'] + ($indicatorId - $rule['start_id']);
 
-                $entries = $entriesByIndicator[$indicator['id']] ?? [];
-                $sums = [];
-
-                foreach ($entries as $entry) {
-                    $sex = trim($entry['sex'] ?? '');
-                    $agegroup = trim($entry['agegroup'] ?? '');
-                    $value = (float)($entry['value'] ?? 0);
-
-                    // 🔹 Build the key to find the column
-                    $key = '';
-
-                    if (!empty($sex) && !empty($agegroup)) {
-                        // Both sex and agegroup are used, e.g. "male_15_19"
-                        $key = strtolower("{$sex}_{$agegroup}");
-                    } elseif (!empty($sex)) {
-                        // Only sex is used, e.g. "male"
-                        $key = strtolower($sex);
-                    } elseif (!empty($agegroup)) {
-                        // Only agegroup is used, e.g. "15_19"
-                        $key = strtolower($agegroup);
-                    }
-
-                    // 🔹 Add to corresponding column if defined in rule
-                    if (isset($rule['cols'][$key])) {
-                        $col = $rule['cols'][$key];
-                        $sums[$col] = ($sums[$col] ?? 0) + $value;
-                    }
+                // Determine the column:
+                // 1️⃣ Prefer sex if present
+                // 2️⃣ Otherwise fallback to agegroup
+                if ($sex && isset($rule['cols'][$sex])) {
+                    $col = $rule['cols'][$sex];
+                } elseif (isset($rule['cols'][$ageGroup])) {
+                    $col = $rule['cols'][$ageGroup];
+                } else {
+                    continue; // skip if no column found
                 }
 
-
-                // Write totals
-                foreach ($sums as $col => $total) {
-                    $sheet->setCellValue($col . $rowNum, $total);
-                }
+                // Sum value with existing cell
+                $currentValue = (float)($sheet->getCell($col . $rowNum)->getValue() ?? 0);
+                $sheet->setCellValue($col . $rowNum, $currentValue + $value);
             }
 
-            // 🔹 Save report file
-            $fileName = 'SectionD_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-            $tempDir = WRITEPATH . 'reports/section_d/';
-            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-            $tempPath = $tempDir . $fileName;
 
+
+            // 🔹 Save report
+            $fileName = sprintf(
+                'SectionD_%s_Q%s_%s_%s.xlsx',
+                preg_replace('/\s+/', '_', $barangayName),
+                $quarter,
+                $year,
+                date('Ymd_His')
+            );
+
+            $dirPath = WRITEPATH . 'reports/section_d/';
+            if (!is_dir($dirPath)) mkdir($dirPath, 0777, true);
+
+            $tempPath = $dirPath . $fileName;
             $writer = new Xlsx($spreadsheet);
             $writer->save($tempPath);
 
-            // 🔹 Log report record
+            // 🔹 Log to database
             $reportLogsModel = new \App\Models\ReportsModel();
             $reportLogsModel->insert([
                 'report_year'    => $year,
@@ -701,47 +765,56 @@ class ReportsController extends ResourceController
                 'created_at'     => date('Y-m-d H:i:s'),
             ]);
 
+            // ✅ Success
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Report generated successfully!',
+                'message' => 'ORAL report generated successfully!',
+                'file'    => $tempPath,
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating report: ' . $e->getMessage());
+            log_message('error', 'Error generating ORAL report: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Error generating report: ' . $e->getMessage(),
-            ]);
+                'message' => 'Error generating ORAL report: ' . $e->getMessage(),
+            ])->setStatusCode(500);
         }
     }
+
 
     public function generateNCDiseaseReport()
     {
         try {
-            $data = $this->prepareReportData('E'); // Section B for maternal
+            $data = $this->prepareReportData('E');
 
-            $sectionId       = $this->request->getPost('sectionSelect'); // still from POST
-            $barangayName    = $data['barangayName'];
-            $year            = $data['year'];
-            $quarterLabel    = $data['quarterLabel'];
-            $quarter         = $data['quarter'];
-            $indicators      = $data['indicators'];
-            $entriesByIndicator = $data['entriesByIndicator'];
+            $barangayName  = $data['barangayName'];
+            $year          = $data['year'];
+            $quarterLabel  = $data['quarterLabel'];
+            $quarter       = $data['quarter'];
+            $indicators    = $data['indicators'];
+            $entries       = $data['entries'];
 
-            // log_message('debug', 'Entries grouped by indicator: ' . print_r($entriesByIndicator, true));
+            // 🔹 Log entries count
+            log_message('info', sprintf(
+                'Generating NCDISEASE Report | Barangay: %s | Year: %s | Quarter: %s | Entries: %d',
+                $barangayName,
+                $year,
+                $quarterLabel,
+                count($entries)
+            ));
 
             // 🔹 Load Excel template
-            $templateFile = APPPATH . 'Views/pages/reports/' . ($this->sectionTemplates[$sectionId] ?? '');
+            $templateFile = APPPATH . 'Views/pages/reports/section_e.xlsx';
             if (!is_file($templateFile)) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                throw new \Exception('Template not found: ' . basename($templateFile));
             }
 
             $spreadsheet = IOFactory::load($templateFile);
             $sheet = $spreadsheet->getActiveSheet();
 
-            // 🔹 Fill header info
+            // 🔹 Fill header
             $sheet->setCellValue('G6', strtoupper($barangayName));
             $sheet->setCellValue('J2', $year);
-            $sheet->setCellValue('G2',  $quarterLabel);
+            $sheet->setCellValue('G2', $quarterLabel);
 
             // 🔹 Define subsection mapping rules
             $mapRules = [
@@ -786,74 +859,66 @@ class ReportsController extends ResourceController
 
             ];
 
-            // 🔹 Fill indicator values
-            foreach ($indicators as $indicator) {
-                $sub = strtolower(trim($indicator['subsection'])); // b1, b2, b3
-                if (!isset($mapRules[$sub])) {
-                    log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$sub}");
-                    continue;
-                }
-                // Determine set 1 or 2 by comparing id ranges
+            foreach ($entries as $entry) {
+                $indicatorId = $entry['indicator_id'];
+                $subsection  = $entry['subsection']; // lowercase
+                $ageGroup    = $entry['agegroup'];
+                $sex         = $entry['sex'] ?? null;
+                $value       = (float)($entry['value'] ?? 0);
+
+                // Skip unknown subsections
+                if (!isset($mapRules[$subsection])) continue;
+
+                // Determine set (1 or 2)
                 $set = null;
-                foreach ($mapRules[$sub] as $s => $rule) {
-                    $nextSet = $mapRules[$sub][$s + 1] ?? null;
+                foreach ($mapRules[$subsection] as $s => $rule) {
+                    $nextSet   = $mapRules[$subsection][$s + 1] ?? null;
                     $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-                    if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                    if ($indicatorId >= $rule['start_id'] && $indicatorId < $nextStart) {
                         $set = $s;
                         break;
                     }
                 }
                 if (!$set) continue;
 
-                $rule = $mapRules[$sub][$set];
-                $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                $rule = $mapRules[$subsection][$set];
+                $rowNum = $rule['start_row'] + ($indicatorId - $rule['start_id']);
 
-                $entries = $entriesByIndicator[$indicator['id']] ?? [];
-                $sums = [];
-
-                foreach ($entries as $entry) {
-                    $sex = trim($entry['sex'] ?? '');
-                    $agegroup = trim($entry['agegroup'] ?? '');
-                    $value = (float)($entry['value'] ?? 0);
-
-                    // 🔹 Build the key to find the column
-                    $key = '';
-
-                    if (!empty($sex) && !empty($agegroup)) {
-                        // Both sex and agegroup are used, e.g. "male_15_19"
-                        $key = strtolower("{$sex}_{$agegroup}");
-                    } elseif (!empty($sex)) {
-                        // Only sex is used, e.g. "male"
-                        $key = strtolower($sex);
-                    } elseif (!empty($agegroup)) {
-                        // Only agegroup is used, e.g. "15_19"
-                        $key = strtolower($agegroup);
-                    }
-
-                    // 🔹 Add to corresponding column if defined in rule
-                    if (isset($rule['cols'][$key])) {
-                        $col = $rule['cols'][$key];
-                        $sums[$col] = ($sums[$col] ?? 0) + $value;
-                    }
+                // Determine the column:
+                // 1️⃣ Prefer sex if present
+                // 2️⃣ Otherwise fallback to agegroup
+                if ($sex && isset($rule['cols'][$sex])) {
+                    $col = $rule['cols'][$sex];
+                } elseif (isset($rule['cols'][$ageGroup])) {
+                    $col = $rule['cols'][$ageGroup];
+                } else {
+                    continue; // skip if no column found
                 }
 
-
-                // Write totals
-                foreach ($sums as $col => $total) {
-                    $sheet->setCellValue($col . $rowNum, $total);
-                }
+                // Sum value with existing cell
+                $currentValue = (float)($sheet->getCell($col . $rowNum)->getValue() ?? 0);
+                $sheet->setCellValue($col . $rowNum, $currentValue + $value);
             }
 
-            // 🔹 Save report file
-            $fileName = 'SectionE_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-            $tempDir = WRITEPATH . 'reports/section_e/';
-            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-            $tempPath = $tempDir . $fileName;
 
+
+            // 🔹 Save report
+            $fileName = sprintf(
+                'SectionE_%s_Q%s_%s_%s.xlsx',
+                preg_replace('/\s+/', '_', $barangayName),
+                $quarter,
+                $year,
+                date('Ymd_His')
+            );
+
+            $dirPath = WRITEPATH . 'reports/section_e/';
+            if (!is_dir($dirPath)) mkdir($dirPath, 0777, true);
+
+            $tempPath = $dirPath . $fileName;
             $writer = new Xlsx($spreadsheet);
             $writer->save($tempPath);
 
-            // 🔹 Log report record
+            // 🔹 Log to database
             $reportLogsModel = new \App\Models\ReportsModel();
             $reportLogsModel->insert([
                 'report_year'    => $year,
@@ -864,16 +929,18 @@ class ReportsController extends ResourceController
                 'created_at'     => date('Y-m-d H:i:s'),
             ]);
 
+            // ✅ Success
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Report generated successfully!',
+                'message' => 'NCDISEASE report generated successfully!',
+                'file'    => $tempPath,
             ]);
         } catch (\Throwable $e) {
-            log_message('error', 'Error generating report: ' . $e->getMessage());
+            log_message('error', 'Error generating ORAL report: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status'  => 'error',
-                'message' => 'Error generating report: ' . $e->getMessage(),
-            ]);
+                'message' => 'Error generating ORAL report: ' . $e->getMessage(),
+            ])->setStatusCode(500);
         }
     }
 
@@ -1165,103 +1232,63 @@ class ReportsController extends ResourceController
         $barangayData = $barangaysModel->where('code', $barangay)->first();
         $barangayName = ($barangay === 'allbgy') ? 'LANTAPAN' : ($barangayData['name'] ?? $barangay);
 
-        $allSectionsData = [];
+        $entriesModel = new \App\Models\EntriesModel();
 
-        foreach ($this->sectionModels as $sectionCode => $modelClass) {
+        $builder = $entriesModel
+            ->where('report_year', $year)
+            ->whereIn('report_month', $months);
 
-            $model = new $modelClass();
-
-            $builder = $model
-                ->where('report_year', $year)
-                ->whereIn('report_month', $months);
-
-            if ($barangay !== 'allbgy') {
-                $builder->where('barangay_code', $barangay);
-            }
-
-            $records = $builder->findAll();
-            // log_message('info', "Section {$sectionCode} records fetched: " . count($records));
-
-            $indicatorsModel = new \App\Models\IndicatorsModel();
-            $indicators = $indicatorsModel
-                // ->where('section_code', $sectionCode)  // match current section
-                ->whereIn('section_code', ['A', 'B'])
-                ->orderBy('order_number', 'ASC')
-                ->findAll();
-
-
-            // log_message('info', "Section {$sectionCode} indicators fetched: " . count($indicators));
-
-
-
-            // log_message('debug', "Section $sectionCode indicators: " . print_r($indicators, true));
-
-
-            $entriesByIndicator = [];
-
-            foreach ($records as $record) {
-                if (!isset($record['indicator_id'])) {
-                    log_message(
-                        'error',
-                        "❌ Section {$sectionCode} record missing indicator_id:\n" .
-                            json_encode($record, JSON_PRETTY_PRINT)
-                    );
-                } else {
-                    $entriesByIndicator[$record['indicator_id']][] = $record;
-                }
-            }
-
-            // 🧾 Pretty log all entries per indicator
-            // if (!empty($entriesByIndicator)) {
-            //     foreach ($entriesByIndicator as $indicatorId => $entries) {
-            //         log_message(
-            //             'info',
-            //             "🧩 Indicator ID: {$indicatorId}\n" .
-            //                 "📘 Section: {$sectionCode}\n" .
-            //                 "📊 Entries Count: " . count($entries) . "\n" .
-            //                 "🧾 Entries Data:\n" .
-            //                 json_encode($entries, JSON_PRETTY_PRINT)
-            //         );
-            //     }
-            // } else {
-            //     log_message('info', "⚠️ No entries found for Section {$sectionCode}");
-            // }
-
-
-            // // Optional: log all entries nicely
-            // foreach ($entriesByIndicator as $indicatorId => $entries) {
-            //     log_message('info', "Section {$sectionCode} → Indicator {$indicatorId} entries:\n" . json_encode($entries, JSON_PRETTY_PRINT));
-            // }
-
-
-            // ✅ Collect section data
-            $allSectionsData[$sectionCode] = [
-                'year'               => $year,
-                'quarter'            => $quarter,
-                'quarterLabel'       => $quarterLabel,
-                'barangayCode'       => $barangay,
-                'barangayName'       => $barangayName,
-                'model'              => $model,
-                'entries'            => $records,
-                'indicators'         => $indicators,
-                'entriesByIndicator' => $entriesByIndicator,
-            ];
+        if ($barangay !== 'allbgy') {
+            $builder->where('barangay_code', $barangay);
         }
 
-        // ✅ Return after the loop
+        $records = $builder->findAll();
+
+        // Fetch all indicators once
+        $indicatorsModel = new \App\Models\IndicatorsModel();
+        $indicators = $indicatorsModel
+            ->whereIn('section_code', ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+            ->orderBy('order_number', 'ASC')
+            ->findAll();
+
+        // Group entries by section and indicator
+        $allSectionsData = [];
+        foreach ($records as $record) {
+            $section = $record['section_code'];
+            $indicatorId = $record['indicator_id'];
+            $allSectionsData[$section]['entriesByIndicator'][$indicatorId][] = $record;
+        }
+
+        // Add indicators per section
+        foreach ($indicators as $ind) {
+            $section = $ind['section_code'];
+            $allSectionsData[$section]['indicators'][$ind['id']] = $ind;
+        }
+
+        // Add meta info
+        foreach ($allSectionsData as $section => &$data) {
+            $data['year'] = $year;
+            $data['quarter'] = $quarter;
+            $data['quarterLabel'] = $quarterLabel;
+            $data['barangayCode'] = $barangay;
+            $data['barangayName'] = $barangayName;
+        }
+
         return $allSectionsData;
     }
 
 
 
-    public function generateAllReport()
+
+
+    public function degenerateAllReportssss()
     {
         try {
 
 
             $allSectionsData = $this->prepareAllReportData();
 
-            foreach ($allSectionsData as $sectionCode => $data) {
+            foreach ($allSectionsData as $sectionCode => $sectionData) {
 
                 if (empty($data['indicators'])) {
                     return $this->response->setJSON([
@@ -1271,26 +1298,24 @@ class ReportsController extends ResourceController
                 }
 
 
-                $barangayName       = $data['barangayName'];      // use $data, not $allSectionsData
-                $year            = $data['year'];
-                $quarterLabel    = $data['quarterLabel'];
-                $quarter         = $data['quarter'];
-                $indicators      = $data['indicators'];
-                $entries = $data['entries'];
+                $barangayName       = $sectionData['barangayName'];      // use $data, not $allSectionsData
+                $year            = $sectionData['year'];
+                $quarterLabel    = $sectionData['quarterLabel'];
+                $quarter         = $sectionData['quarter'];
 
                 // // 🔹 Load Excel template
-                // $templateFile = APPPATH . 'Views/pages/reports/section_all.xlsx';
-                // if (!is_file($templateFile)) {
-                //     return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
-                // }
+                $templateFile = APPPATH . 'Views/pages/reports/section_all.xlsx';
+                if (!is_file($templateFile)) {
+                    return $this->response->setJSON(['status' => 'error', 'message' => 'Template not found: ' . basename($templateFile)]);
+                }
 
-                // $spreadsheet = IOFactory::load($templateFile);
-                // $sheet = $spreadsheet->getActiveSheet();
+                $spreadsheet = IOFactory::load($templateFile);
+                $sheet = $spreadsheet->getActiveSheet();
 
-                // // 🔹 Fill header info
-                // $sheet->setCellValue('G6', strtoupper($barangayName));
-                // $sheet->setCellValue('J2', $year);
-                // $sheet->setCellValue('G2',  $quarterLabel);
+                // 🔹 Fill header info
+                $sheet->setCellValue('G6', strtoupper($barangayName));
+                $sheet->setCellValue('J2', $year);
+                $sheet->setCellValue('G2',  $quarterLabel);
 
                 // 🔹 Define subsection mapping rules
                 $mapRules = [
@@ -1453,201 +1478,470 @@ class ReportsController extends ResourceController
                 ];
 
                 // 🔹 Fill indicator values
-                // foreach ($indicators as $indicator) {
+                foreach ($sectionData['indicators'] as $indicatorId => $indicator) {
 
-                //     $section = strtoupper($indicator['section_code']); // e.g., 'A', 'B', 'C', 'F', etc.
+                    $section = strtoupper($indicator['section_code']); // e.g., 'A', 'B', 'C', 'F', etc.
 
-                //     // log_message('info', "Indicator {$indicator['id']} has section_code={$indicator['section_code']} (upper={$section})");
+                    // log_message('info', "Indicator {$indicator['id']} has section_code={$indicator['section_code']} (upper={$section})");
 
-                //     $subKey  = strtolower(trim($indicator['subsection'] ?? '')); // for sections with subsections
+                    $subKey  = strtolower(trim($indicator['subsection'] ?? '')); // for sections with subsections
 
-                //     if (!isset($mapRules[$section])) {
-                //         log_message('debug', "Skipping indicator {$indicator['id']} — unknown section {$section}");
-                //         continue;
-                //     }
-
-                //     $sectionMap = $mapRules[$section];
-
-                //     // Determine which map to use
-                //     if (in_array($section, ['A'])) {
-                //         // log_message('info', "Processing Section {$section}, Indicator ID: {$indicator['id']}, SubKey: {$subKey}");
-
-                //         // Section A uses user_type directly
-                //         $ruleMap = $sectionMap;
-                //         $rowBase = 15; // <-- adjust this to your actual first row number in Excel for Section A
-                //         $rowNum = $rowBase + ($indicator['order_number'] ?? 0);
-
-                //         // log_message('info', "Section A - Indicator {$indicator['id']} row: {$rowNum}");
-
-                //         if (!$rowNum) continue;
-
-                //         $sums = [];
-
-                //         foreach ($entriesByIndicator[$indicator['id']] ?? [] as $entry) {
-                //             $userType = trim($entry['user_type']);
-                //             $ageGroup = trim($entry['agegroup']);
-                //             $value    = $entry['value'] ?? 0;
-
-                //             if (isset($ruleMap[$userType][$ageGroup])) {
-                //                 $col = $ruleMap[$userType][$ageGroup];
-                //                 $sums[$col] = ($sums[$col] ?? 0) + $value;
-                //             }
-                //         }
-                //     }
-
-                //     if (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
-                //         // Sections with subsections
-                //         if (!isset($sectionMap[$subKey])) {
-                //             log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$subKey}");
-                //             continue;
-                //         }
-
-                //         // Determine set 1/2/3 etc. by comparing start_id ranges
-                //         $set = null;
-                //         foreach ($sectionMap[$subKey] as $s => $rule) {
-                //             $nextSet = $sectionMap[$subKey][$s + 1] ?? null;
-                //             $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
-
-                //             if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
-                //                 $set = $s;
-                //                 break;
-                //             }
-                //         }
-                //         if (!$set) continue;
-
-                //         $rule   = $sectionMap[$subKey][$set];
-                //         $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
-                //         $sums   = [];
-
-                //         $entries = $entriesByIndicator[$indicator['id']] ?? [];
-                //         $countEntries = count($entries);
-                //         log_message('info', "Section {$section} → Indicator {$indicator['id']} has {$countEntries} entries");
-
-                //         foreach ($entries as $entry) {
-                //             $sex      = trim($entry['sex'] ?? '');
-                //             $ageGroup = trim($entry['agegroup'] ?? '');
-                //             $value    = (float)($entry['value'] ?? 0);
-
-                //             // Build key depending on mapping style
-                //             if (!empty($sex) && !empty($ageGroup)) {
-                //                 $key = strtolower("{$sex}_{$ageGroup}");
-                //             } elseif (!empty($sex)) {
-                //                 $key = strtolower($sex);
-                //             } elseif (!empty($ageGroup)) {
-                //                 $key = strtolower($ageGroup);
-                //             } else {
-                //                 $key = 'value'; // For Section F
-                //             }
-
-                //             if (isset($rule['cols'][$key])) {
-                //                 $col = $rule['cols'][$key];
-                //                 $sums[$col] = ($sums[$col] ?? 0) + $value;
-                //             }
-                //         }
-                //     } elseif ($section === 'F') {
-                //         // Section F just sequential values
-                //         $subKey = strtolower($subKey ?: key($sectionMap));
-                //         $rule = $sectionMap[$subKey][1];
-                //         $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
-                //         $sums = [];
-                //         $values = $entriesByIndicator[$indicator['id']] ?? [];
-                //         $col = $rule['cols']['value'] ?? 'B';
-
-                //         foreach ($values as $i => $entry) {
-                //             // Sequentially fill B, C, D, ... depending on index
-                //             $colLetter = chr(ord($col) + $i);
-                //             $sums[$colLetter] = $entry['value'] ?? 0;
-                //         }
-                //     }
-
-                //     // log_message('info', "B–G Totals Check → Section {$section}, Indicator {$indicator['id']}, row {$rowNum}, sums: " . json_encode($sums));
-
-                //     // Write totals to Excel
-                //     foreach ($sums as $col => $total) {
-                //         $sheet->setCellValue($col . $rowNum, $total);
-                //     }
-                // }
-
-                $allEntries = [];
-
-                foreach ($indicators as $indicator) {
-                    $section = strtoupper($indicator['section_code']);
-                    // log_message('info', "Section variable: " . $section);
-
-                    $entriesByIndicator = $data['entriesByIndicator'];
-
-                    $entriesForIndicator = $entriesByIndicator[$indicator['id']] ?? [];
-
-                    $allEntries = array_merge($allEntries, $entriesForIndicator);
-
-                    log_message('info', "Section {$sectionCode} — All entries count: " . count($allEntries));
-
-
-                    // 🧾 Pretty log all entries per indicator
-                    if (!empty($entriesForIndicator)) {
-                        foreach ($entriesForIndicator as $indicatorId => $entries) {
-                            // log_message(
-                            //     'info',
-                            //     "🧩 Indicator ID: {$indicatorId}\n" .
-                            //         "📘 Section: {$sectionCode}\n" .
-                            //         "📊 Entries Count: " . count($entries) . "\n" .
-                            //         "🧾 Entries Data:\n" .
-                            //         json_encode($entries, JSON_PRETTY_PRINT)
-                            // );
-                        }
-                    } else {
-                        // log_message('info', "⚠️ No entries found for Section {$sectionCode}");
+                    if (!isset($mapRules[$section])) {
+                        log_message('debug', "Skipping indicator {$indicator['id']} — unknown section {$section}");
+                        continue;
                     }
 
-                    // log_message(
-                    //     'info',
-                    //     "🧩 Indicator ID: {$indicator['id']}\n" .
-                    //         "📘 Section: {$indicator['section_code']}\n" .
-                    //         "📊 Entries Count: " . count($entriesForIndicator) . "\n" .
-                    //         "🧾 Entries Data:\n" . json_encode($entriesForIndicator, JSON_PRETTY_PRINT)
-                    // );
-                    // $countEntries = count($entriesForIndicator);
-                    // log_message('info', "Count of entriesForIndicator: " . $countEntries);
+                    $sectionMap = $mapRules[$section];
 
-
-
+                    // Determine which map to use
                     if (in_array($section, ['A'])) {
-                        // log_message('info', "Processing Section A");
-                        // ...
-                    } elseif (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
-                        // log_message('info', "Processing Section B-G");
-                        // ...
+                        // log_message('info', "Processing Section {$section}, Indicator ID: {$indicator['id']}, SubKey: {$subKey}");
+
+                        // Section A uses user_type directly
+                        $ruleMap = $sectionMap;
+                        $rowBase = 15; // <-- adjust this to your actual first row number in Excel for Section A
+                        $rowNum = $rowBase + ($indicator['order_number'] ?? 0);
+
+                        // log_message('info', "Section A - Indicator {$indicator['id']} row: {$rowNum}");
+
+                        if (!$rowNum) continue;
+
+                        $sums = [];
+
+                        foreach ($entriesByIndicator[$indicator['id']] ?? [] as $entry) {
+                            $userType = trim($entry['user_type']);
+                            $ageGroup = trim($entry['agegroup']);
+                            $value    = $entry['value'] ?? 0;
+
+                            if (isset($ruleMap[$userType][$ageGroup])) {
+                                $col = $ruleMap[$userType][$ageGroup];
+                                $sums[$col] = ($sums[$col] ?? 0) + $value;
+                            }
+                        }
+                    }
+
+                    if (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
+                        // Sections with subsections
+                        if (!isset($sectionMap[$subKey])) {
+                            log_message('debug', "Skipping indicator {$indicator['id']} — unknown subsection {$subKey}");
+                            continue;
+                        }
+
+                        // Determine set 1/2/3 etc. by comparing start_id ranges
+                        $set = null;
+                        foreach ($sectionMap[$subKey] as $s => $rule) {
+                            $nextSet = $sectionMap[$subKey][$s + 1] ?? null;
+                            $nextStart = $nextSet['start_id'] ?? PHP_INT_MAX;
+
+                            if ($indicator['id'] >= $rule['start_id'] && $indicator['id'] < $nextStart) {
+                                $set = $s;
+                                break;
+                            }
+                        }
+                        if (!$set) continue;
+
+                        $rule   = $sectionMap[$subKey][$set];
+                        $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                        $sums   = [];
+
+                        $entries = $entriesByIndicator[$indicator['id']] ?? [];
+                        $countEntries = count($entries);
+                        log_message('info', "Section {$section} → Indicator {$indicator['id']} has {$countEntries} entries");
+
+                        foreach ($entries as $entry) {
+                            $sex      = trim($entry['sex'] ?? '');
+                            $ageGroup = trim($entry['agegroup'] ?? '');
+                            $value    = (float)($entry['value'] ?? 0);
+
+                            // Build key depending on mapping style
+                            if (!empty($sex) && !empty($ageGroup)) {
+                                $key = strtolower("{$sex}_{$ageGroup}");
+                            } elseif (!empty($sex)) {
+                                $key = strtolower($sex);
+                            } elseif (!empty($ageGroup)) {
+                                $key = strtolower($ageGroup);
+                            } else {
+                                $key = 'value'; // For Section F
+                            }
+
+                            if (isset($rule['cols'][$key])) {
+                                $col = $rule['cols'][$key];
+                                $sums[$col] = ($sums[$col] ?? 0) + $value;
+                            }
+                        }
                     } elseif ($section === 'F') {
-                        // log_message('info', "Processing Section F");
-                        // ...
+                        // Section F just sequential values
+                        $subKey = strtolower($subKey ?: key($sectionMap));
+                        $rule = $sectionMap[$subKey][1];
+                        $rowNum = $rule['start_row'] + ($indicator['id'] - $rule['start_id']);
+                        $sums = [];
+                        $values = $entriesByIndicator[$indicator['id']] ?? [];
+                        $col = $rule['cols']['value'] ?? 'B';
+
+                        foreach ($values as $i => $entry) {
+                            // Sequentially fill B, C, D, ... depending on index
+                            $colLetter = chr(ord($col) + $i);
+                            $sums[$colLetter] = $entry['value'] ?? 0;
+                        }
+                    }
+
+                    // log_message('info', "B–G Totals Check → Section {$section}, Indicator {$indicator['id']}, row {$rowNum}, sums: " . json_encode($sums));
+
+                    // Write totals to Excel
+                    foreach ($sums as $col => $total) {
+                        $sheet->setCellValue($col . $rowNum, $total);
                     }
                 }
 
-                // // 🔹 Save report file
-                // $fileName = 'SectionALL_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
-                // $tempDir = WRITEPATH . 'reports/section_all/';
-                // if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
-                // $tempPath = $tempDir . $fileName;
 
-                // $writer = new Xlsx($spreadsheet);
-                // $writer->save($tempPath);
 
-                // // 🔹 Log report record
-                // $reportLogsModel = new \App\Models\ReportsModel();
-                // $reportLogsModel->insert([
-                //     'report_year'    => $year,
-                //     'report_quarter' => $quarter,
-                //     'barangay'       => $barangayName,
-                //     'section'        => 'ALL',
-                //     'filepath'       => $tempPath,
-                //     'created_at'     => date('Y-m-d H:i:s'),
-                // ]);
+                // 🔹 Save report file
+                $fileName = 'SectionALL_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+                $tempDir = WRITEPATH . 'reports/section_all/';
+                if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+                $tempPath = $tempDir . $fileName;
+
+                $writer = new Xlsx($spreadsheet);
+                $writer->save($tempPath);
+
+                // 🔹 Log report record
+                $reportLogsModel = new \App\Models\ReportsModel();
+                $reportLogsModel->insert([
+                    'report_year'    => $year,
+                    'report_quarter' => $quarter,
+                    'barangay'       => $barangayName,
+                    'section'        => 'ALL',
+                    'filepath'       => $tempPath,
+                    'created_at'     => date('Y-m-d H:i:s'),
+                ]);
+
 
                 return $this->response->setJSON([
                     'status'  => 'success',
                     'message' => 'Report generated successfully!',
                 ]);
             }
+        } catch (\Throwable $e) {
+            log_message('error', 'Error generating report: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Error generating report: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function getMapRules(): array
+    {
+        return [
+            'A' => [
+                // SECTION A: FAMILY PLANNING
+                'current_user_beginning' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D'],
+                'new_acceptor_previous'   => ['10-14' => 'F', '15-19' => 'G', '20-49' => 'H'],
+                'other_acceptor_present'  => ['10-14' => 'J', '15-19' => 'K', '20-49' => 'L'],
+                'drop_outs'               => ['10-14' => 'N', '15-19' => 'O', '20-49' => 'P'],
+                'current_user_end'        => ['10-14' => 'R', '15-19' => 'S', '20-49' => 'T'],
+                'new_acceptor_present'    => ['10-14' => 'V', '15-19' => 'W', '20-49' => 'X'],
+            ],
+            'B' => [
+                'b1' => [
+                    1 => ['start_id' => 17, 'start_row' => 39, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D']],
+                    2 => ['start_id' => 30, 'start_row' => 39, 'cols' => ['10-14' => 'Q', '15-19' => 'R', '20-49' => 'S']],
+                ],
+                'b2' => [
+                    1 => ['start_id' => 41, 'start_row' => 54, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D']],
+                    2 => ['start_id' => 50, 'start_row' => 54, 'cols' => ['10-14' => 'Q', '15-19' => 'R', '20-49' => 'S']],
+                ],
+                'b3' => [
+                    1 => ['start_id' => 60, 'start_row' => 67, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-49' => 'D']],
+                    2 => ['start_id' => 68, 'start_row' => 67, 'cols' => ['10-14' => 'Q', '15-19' => 'R', '20-49' => 'S']],
+                ],
+            ],
+            'C' => [
+                'ca1' => [
+                    1 => ['start_id' => 70, 'start_row' => 80, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 73, 'start_row' => 80, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca2' => [
+                    1 => ['start_id' => 75, 'start_row' => 86, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 82, 'start_row' => 86, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca3' => [
+                    1 => ['start_id' => 89, 'start_row' => 94, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 96, 'start_row' => 94, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'ca4' => [
+                    1 => ['start_id' => 103, 'start_row' => 104, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 106, 'start_row' => 104, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'cb' => [
+                    1 => ['start_id' => 109, 'start_row' => 110, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 113, 'start_row' => 110, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                    3 => ['start_id' => 117, 'start_row' => 116, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                    4 => ['start_id' => 124, 'start_row' => 116, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'cc' => [
+                    1 => ['start_id' => 130, 'start_row' => 126, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 135, 'start_row' => 126, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+            ],
+            'D' => [
+                'o1' => [
+                    1 => ['start_id' => 139, 'start_row' => 135, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 155, 'start_row' => 135, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'o2' => [
+                    1 => ['start_id' => 170, 'start_row' => 153, 'cols' => ['10-14' => 'B', '15-19' => 'C', '20-59' => 'D']],
+                    2 => ['start_id' => 173, 'start_row' => 153, 'cols' => ['10-14' => 'P', '15-19' => 'Q', '20-59' => 'R']],
+                ],
+            ],
+            'E' => [
+                'ncd1' => [
+                    1 => ['start_id' => 176, 'start_row' => 160, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 183, 'start_row' => 160, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'ncd2' => [
+                    1 => ['start_id' => 190, 'start_row' => 168, 'cols' => ['male' => 'B', 'female' => 'C']],
+                ],
+                'ncd3' => [
+                    1 => ['start_id' => 198, 'start_row' => 168, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'ncd4' => [
+                    1 => ['start_id' => 206, 'start_row' => 179, 'cols' => ['male' => 'B', 'female' => 'C']],
+                ],
+                'ncd5' => [
+                    1 => ['start_id' => 209, 'start_row' => 179, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'ncd6' => [
+                    1 => ['start_id' => 213, 'start_row' => 184, 'cols' => ['male' => 'B', 'female' => 'C']],
+                ],
+                'ncd7' => [
+                    1 => ['start_id' => 226, 'start_row' => 184, 'cols' => ['male' => 'P', 'female' => 'Q']],
+                ],
+                'ncd8' => [
+                    1 => [
+                        'start_id' => 240,
+                        'start_row' => 202,
+                        'cols' => [
+                            'male_0-9'        => 'B',
+                            'female_0-9'      => 'C',
+                            'male_10-19'      => 'D',
+                            'female_10-19'    => 'E',
+                            'male_20-59'      => 'F',
+                            'female_20-59'    => 'G',
+                            'male_60-above'   => 'H',
+                            'female_60-above' => 'I',
+                        ],
+                    ],
+                ],
+            ],
+            'F' => [
+                'e1' => [
+                    1 => [
+                        'start_id' => 241,
+                        'start_row' => 207,
+                        'cols' => [
+                            'value' => 'B'  // all indicators under this map will go to col B, C, D sequentially
+                        ],
+                    ],
+                ],
+                'e2' => [
+                    1 => [
+                        'start_id' => 246,
+                        'start_row' => 207,
+                        'cols' => [
+                            'value' => 'N'
+                        ],
+                    ],
+                ],
+                'e3' => [
+                    1 => [
+                        'start_id' => 251,
+                        'start_row' => 214,
+                        'cols' => [
+                            'value' => 'B'
+                        ],
+                    ],
+                ],
+            ],
+            'G' => [
+                'id1' => [
+                    1 => ['start_id' => 253, 'start_row' => 220, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 257, 'start_row' => 220, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id2' => [
+                    1 => ['start_id' => 261, 'start_row' => 225, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 276, 'start_row' => 225, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id3' => [
+                    1 => ['start_id' => 288, 'start_row' => 243, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 314, 'start_row' => 243, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id4' => [
+                    1 => ['start_id' => 339, 'start_row' => 272, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 357, 'start_row' => 272, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id5' => [
+                    1 => ['start_id' => 376, 'start_row' => 294, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 388, 'start_row' => 294, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+                'id6' => [
+                    1 => ['start_id' => 400, 'start_row' => 307, 'cols' => ['male' => 'B', 'female' => 'C']],
+                    2 => ['start_id' => 402, 'start_row' => 307, 'cols' => ['male' => 'Q', 'female' => 'R']],
+                ],
+            ],
+        ];
+    }
+
+
+    public function generateAllReport()
+    {
+        try {
+
+            $allSectionsData = $this->prepareAllReportData();
+
+            foreach ($allSectionsData as $sectionCode => $sectionData) {
+
+                // Use sectionData, not undefined $data
+                if (empty($sectionData['indicators'])) {
+                    return $this->response->setJSON([
+                        'status' => 'error',
+                        'message' => "No indicators found for section $sectionCode"
+                    ]);
+                }
+
+                $barangayName       = $sectionData['barangayName'];
+                $year               = $sectionData['year'];
+                $quarterLabel       = $sectionData['quarterLabel'];
+                $quarter            = $sectionData['quarter'];
+                $indicators         = $sectionData['indicators'];
+                $entriesByIndicator = $sectionData['entriesByIndicator'] ?? [];
+
+                // 🔹 Load Excel template
+                $templateFile = APPPATH . 'Views/pages/reports/section_all.xlsx';
+                if (!is_file($templateFile)) {
+                    return $this->response->setJSON([
+                        'status' => 'error',
+                        'message' => 'Template not found: ' . basename($templateFile)
+                    ]);
+                }
+
+                $spreadsheet = IOFactory::load($templateFile);
+                $sheet = $spreadsheet->getActiveSheet();
+
+                // 🔹 Fill header info
+                $sheet->setCellValue('G6', strtoupper($barangayName));
+                $sheet->setCellValue('J2', $year);
+                $sheet->setCellValue('G2', $quarterLabel);
+
+                // 🔹 Your $mapRules array here
+                $mapRules = $this->getMapRules(); // you can put all your mapping logic in a private method
+
+                // 🔹 Fill indicator values
+                foreach ($indicators as $indicatorId => $indicator) {
+                    $section = strtoupper($indicator['section_code']);
+                    $subKey  = strtolower(trim($indicator['subsection'] ?? ''));
+
+                    $sectionMap = $mapRules[$section];
+                    $sums = [];
+
+                    $entries = $entriesByIndicator[$indicatorId] ?? [];
+
+                    $rowNum = '';
+                    // Process entries based on section (A / B-G / F)
+                    if ($section === 'A') {
+
+                        $ruleMap = $sectionMap; // mapping of user_type → agegroup → Excel column
+                        $rowBase = 25; // adjust this based on your Excel template
+                        $rowNum = $rowBase + ($indicator['order_number'] ?? 0);
+
+                        if (!$rowNum) {
+                            log_message('debug', "Skipping Section A indicator {$indicator['id']} — no row number");
+                            continue;
+                        }
+
+                        $sums = [];
+                        $entriesForIndicator = $sectionData['entriesByIndicator'][$indicator['id']] ?? [];
+
+                        // Log all entries before summing
+                        log_message('info', "Section A → Indicator {$indicator['id']} entries: " . json_encode($entriesForIndicator, JSON_PRETTY_PRINT));
+
+                        foreach ($entriesForIndicator as $entry) {
+                            $userType = trim($entry['user_type']);
+                            $ageGroup = trim($entry['agegroup']);
+                            $value    = (float)($entry['value'] ?? 0);
+
+                            if (isset($ruleMap[$userType][$ageGroup])) {
+                                $col = $ruleMap[$userType][$ageGroup];
+                                $sums[$col] = ($sums[$col] ?? 0) + $value;
+                            }
+                        }
+
+                        // Write sums to Excel
+                        foreach ($sums as $col => $total) {
+                            $sheet->setCellValue($col . $rowNum, $total);
+                        }
+
+                        // Log the totals written
+                        log_message('info', "Section A → Indicator {$indicator['id']} totals written to row {$rowNum}: " . json_encode($sums));
+                    }
+
+                    // elseif (in_array($section, ['B', 'C', 'D', 'E', 'G'])) {
+                    //     if (!isset($sectionMap[$subKey])) continue;
+
+                    //     foreach ($entries as $entry) {
+                    //         $sex      = trim($entry['sex'] ?? '');
+                    //         $ageGroup = trim($entry['agegroup'] ?? '');
+                    //         $value    = (float)($entry['value'] ?? 0);
+
+                    //         $key = !empty($sex) && !empty($ageGroup)
+                    //             ? strtolower("{$sex}_{$ageGroup}")
+                    //             : (!empty($sex) ? strtolower($sex) : (!empty($ageGroup) ? strtolower($ageGroup) : 'value'));
+
+                    //         if (isset($sectionMap[$subKey][1]['cols'][$key])) {
+                    //             $col = $sectionMap[$subKey][1]['cols'][$key];
+                    //             $sums[$col] = ($sums[$col] ?? 0) + $value;
+                    //         }
+                    //     }
+                    // } elseif ($section === 'F') {
+                    //     $rule = $sectionMap[$subKey][1] ?? null;
+                    //     if (!$rule) continue;
+
+                    //     $col = $rule['cols']['value'] ?? 'B';
+                    //     foreach ($entries as $i => $entry) {
+                    //         $colLetter = chr(ord($col) + $i);
+                    //         $sums[$colLetter] = $entry['value'] ?? 0;
+                    //     }
+                    // }
+
+                    // 🔹 Write sums to Excel
+
+                }
+            }
+
+            // 🔹 Save report
+            $fileName = 'SectionALL_' . $barangayName . '_Q' . $quarter . '_' . $year . '_' . date('Ymd_His') . '.xlsx';
+            $tempDir = WRITEPATH . 'reports/section_all/';
+            if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
+            $tempPath = $tempDir . $fileName;
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempPath);
+
+            // 🔹 Log report
+            $reportLogsModel = new \App\Models\ReportsModel();
+            $reportLogsModel->insert([
+                'report_year'    => $year,
+                'report_quarter' => $quarter,
+                'barangay'       => $barangayName,
+                'section'        => 'ALL',
+                'filepath'       => $tempPath,
+                'created_at'     => date('Y-m-d H:i:s'),
+            ]);
+
+            return $this->response->setJSON([
+                'status'  => 'success',
+                'message' => 'Report generated successfully!',
+            ]);
         } catch (\Throwable $e) {
             log_message('error', 'Error generating report: ' . $e->getMessage());
             return $this->response->setJSON([

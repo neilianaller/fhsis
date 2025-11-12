@@ -83,7 +83,7 @@ class NCDiseaseController extends ResourceController
 
     public function save()
     {
-        $entriesModel = new \App\Models\EntriesNCDiseaseModel();
+        $entriesModel = new \App\Models\EntriesModel();
 
         $barangay_code = $this->request->getPost('barangay_code');
         $report_month  = $this->request->getPost('report_month');
@@ -144,7 +144,7 @@ class NCDiseaseController extends ResourceController
 
     public function get()
     {
-        $entriesModel = new \App\Models\EntriesNCDiseaseModel();
+        $entriesModel = new \App\Models\EntriesModel();
 
         $barangayCode = $this->request->getGet('barangay_code');
         $reportMonth  = $this->request->getGet('report_month');
