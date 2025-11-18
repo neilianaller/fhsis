@@ -26,19 +26,25 @@ class ReportsController extends ResourceController
 
 
 
-    public function index(): string
+    public function index()
     {
 
-        $SectionsModel = new \App\Models\SectionsModel();
-        $BarangaysModel = new \App\Models\BarangaysModel();
+        if (auth()->loggedIn()) {
 
-        $sections = $SectionsModel->findall();
-        $barangays = $BarangaysModel->findAll();
 
-        return view('pages/reports', [
-            'barangays' => $barangays,
-            'sections' => $sections
-        ]);
+            $SectionsModel = new \App\Models\SectionsModel();
+            $BarangaysModel = new \App\Models\BarangaysModel();
+
+            $sections = $SectionsModel->findall();
+            $barangays = $BarangaysModel->findAll();
+
+            return view('pages/reports', [
+                'barangays' => $barangays,
+                'sections' => $sections
+            ]);
+        }
+
+        return redirect()->to('/login');
     }
 
     public function list()

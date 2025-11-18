@@ -7,7 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'ReportsController::index');
 $routes->resource('dashboard', ['controller' => 'DashboardController']);
-$routes->resource('sections', ['controller' => 'SectionsController']);
+$routes->resource('sections', ['controller' => 'SectionsController', 'filter' => 'group: admin']);
 $routes->resource('subsections', ['controller' => 'SubSectionsController']);
 $routes->resource('categories', ['controller' => 'CategoriesController']);
 $routes->resource('indicators', ['controller' => 'IndicatorsController']);

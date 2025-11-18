@@ -31,10 +31,7 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-input, label{
-    text-transform: uppercase;
-    font-weight: bold;
-}
+
 
 
 /* Full-screen overlay for the loader */
@@ -101,4 +98,14 @@ input, label{
 
 tr {
     cursor: pointer;
+}
+
+.parent {
+    background-color: transparent !important;
+    color: #c2c7d0 !important;
+}
+
+.parent:hover {
+    background-color: #494e53 !important;
+    color: #ffffff !important;
 }

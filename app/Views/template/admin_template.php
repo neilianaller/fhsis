@@ -6,13 +6,21 @@
 <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
     <div class="app-wrapper">
 
-        <?php include 'menu.php'; ?>
+        <?php if (auth()->loggedIn()) { ?>
+
+            <?php include 'menu.php'; ?>
+
+        <?php } ?>
 
         <main class="app-main">
             <?= $this->renderSection('content') ?>
         </main>
 
-        <?php include 'footer.php'; ?>
+        <?php if (auth()->loggedIn()) { ?>
+
+            <?php include 'footer.php'; ?>
+
+        <?php } ?>
 
         <aside class="control-sidebar control-sidebar-dark">
 

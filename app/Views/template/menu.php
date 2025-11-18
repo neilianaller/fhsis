@@ -92,8 +92,9 @@
                 $isAddEntryActive = in_array($uri, $addEntryPages);
                 ?>
 
-                <li class="nav-item <?= $isAddEntryActive ? 'menu-open' : '' ?>">
-                    <a href="#" class="nav-link <?= $isAddEntryActive ? 'active' : '' ?>">
+                <li class="nav-item menu-open">
+                    
+                    <a href="#" class="nav-link parent">
                         <i class="nav-icon bi bi-database-add"></i>
                         <p>
                             Add Entry
@@ -170,14 +171,18 @@
 
                 </li>
 
-                <li class="nav-item">
-                    <a href="<?= base_url('sections') ?>" class="nav-link <?= (uri_string() == 'sections') ? 'active' : '' ?>">
-                        <i class="nav-icon bi bi-puzzle-fill"></i>
-                        <p>
-                            Sections
-                        </p>
-                    </a>
-                </li>
+                <?php if (auth()->loggedIn() && (auth()->user()->inGroup('admin'))) { ?>
+
+                    <li class="nav-item">
+                        <a href="<?= base_url('sections') ?>" class="nav-link <?= (uri_string() == 'sections') ? 'active' : '' ?>">
+                            <i class="nav-icon bi bi-puzzle-fill"></i>
+                            <p>
+                                Sections
+                            </p>
+                        </a>
+                    </li>
+
+                <?php } ?>
 
             </ul>
             <!--end::Sidebar Menu-->
