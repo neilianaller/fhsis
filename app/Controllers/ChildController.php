@@ -39,14 +39,14 @@ class ChildController extends ResourceController
 
         $cbIndicators = $IndicatorsModel
             ->where('section_code', 'C')
-            ->whereIn('subsection', [6, 7])
+            ->where('subsection', 'cb')
             ->orderBy('subsection', 'ASC')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 
 
         $ccIndicators = $IndicatorsModel->where('section_code', 'C')
-            ->where('subsection', '8')
+            ->where('subsection', 'cc')
             ->orderBy('order_number', 'ASC')
             ->findAll();
 

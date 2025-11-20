@@ -29,7 +29,8 @@ class EntriesController extends ResourceController
         $report_year   = $this->request->getPost('report_year');
         $user_type   = $this->request->getPost('user_type');
         $indicatorId   = $this->request->getPost('indicatorId');
-        $entries       = $this->request->getPost('entries'); // array of { agegroup, user_type, value }
+        $entries       = $this->request->getPost('entries');
+        $subsection       = $this->request->getPost('subsection');
 
         if (!$barangay_code || !$report_month || !$report_year || !$entries) {
             return $this->response->setJSON([
@@ -43,8 +44,10 @@ class EntriesController extends ResourceController
                 'barangay_code' => $barangay_code,
                 'report_month'  => $report_month,
                 'report_year'   => $report_year,
-                'agegroup'      => $entry['agegroup'],
+                'agegroup'      => $entry['agegroup'] ?? '',
+                'sex'      => $entry['sex'] ?? '',
                 'user_type'     => $user_type,
+                'subsection'     => $subsection,
                 'indicator_id'     => $indicatorId
             ])->first();
 
@@ -63,8 +66,10 @@ class EntriesController extends ResourceController
                     'barangay_code' => $barangay_code,
                     'report_month'  => $report_month,
                     'report_year'   => $report_year,
-                    'agegroup'      => $entry['agegroup'],
+                    'agegroup'      => $entry['agegroup'] ?? '',
+                    'sex'      => $entry['sex'] ?? '',
                     'user_type'     => $user_type,
+                    'subsection'     => $subsection,
                     'value'         => $entry['value'],
                     'created_at'    => date('Y-m-d H:i:s'),
                     'updated_at'    => date('Y-m-d H:i:s')

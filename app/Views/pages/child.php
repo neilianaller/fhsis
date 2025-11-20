@@ -511,7 +511,7 @@
             if (this.checkValidity()) {
 
                 $.ajax({
-                    url: "<?= base_url('saveChild'); ?>",
+                    url: "<?= base_url('save'); ?>/C",
                     type: "POST",
                     dataType: "json",
                     data: {
