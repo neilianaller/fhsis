@@ -280,7 +280,7 @@
                             </div>
 
                             <!-- CURRENT USER (END OF THE MONTH) -->
-                            <!-- <div class="col-4">
+                            <div class="col-4">
 
                                 <div class="card">
 
@@ -300,15 +300,15 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>10-14</td>
-                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="current_user_end"></td>
+                                                        <td><input type="number" class="form-control" data-agegroup="10-14" data-user-type="current_user_end" disabled></td>
                                                     </tr>
                                                     <tr>
                                                         <td>15-19</td>
-                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="current_user_end"></td>
+                                                        <td><input type="number" class="form-control" data-agegroup="15-19" data-user-type="current_user_end" disabled></td>
                                                     </tr>
                                                     <tr>
                                                         <td>20-49</td>
-                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="current_user_end"></td>
+                                                        <td><input type="number" class="form-control" data-agegroup="20-49" data-user-type="current_user_end" disabled></td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot>
@@ -332,7 +332,7 @@
 
                                 </div>
 
-                            </div> -->
+                            </div>
 
                             <!-- NEW ACCEPTORS (PRESENT MONTH) -->
                             <div class="col-4">
@@ -433,6 +433,7 @@
                         // Clear all current inputs first
                         $('table input[type="number"]').val('');
 
+
                         // Populate values
                         entries.forEach(entry => {
                             // Find a matching input field
@@ -446,6 +447,9 @@
                                 input.trigger('input'); // recalc total
                             }
                         });
+
+                        computeCurrentUserEnd(); // ⬅️ auto-calc on page load
+
 
                     } else {
                         console.warn(response.message);
@@ -558,6 +562,30 @@
             table.find('tfoot input[readonly]').val(total);
         });
 
+    });
+
+    function computeCurrentUserEnd() {
+
+        const ageGroups = ["10-14", "15-19", "20-49"];
+
+        ageGroups.forEach(age => {
+
+            const beginning = parseInt(document.querySelector(`input[data-agegroup="${age}"][data-user-type="current_user_beginning"]`)?.value || 0);
+            const newAccPrev = parseInt(document.querySelector(`input[data-agegroup="${age}"][data-user-type="new_acceptor_previous"]`)?.value || 0);
+            const otherAcc = parseInt(document.querySelector(`input[data-agegroup="${age}"][data-user-type="other_acceptor_present"]`)?.value || 0);
+            const dropouts = parseInt(document.querySelector(`input[data-agegroup="${age}"][data-user-type="drop_outs"]`)?.value || 0);
+
+            const endValue = beginning + newAccPrev + otherAcc - dropouts;
+
+            const endInput = document.querySelector(`input[data-agegroup="${age}"][data-user-type="current_user_end"]`);
+            if (endInput) endInput.value = endValue;
+        });
+
+        computeEndTotal();
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', computeCurrentUserEnd);
     });
 </script>
 <?= $this->endSection() ?>

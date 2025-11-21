@@ -75,6 +75,100 @@ class EntriesController extends ResourceController
                     'updated_at'    => date('Y-m-d H:i:s')
                 ]);
             }
+
+            if ($code === 'A') {
+                log_message('info', 'Section A entry processed.');
+
+                // Step 1: Fetch current month's relevant data to calculate current_user_end
+                $ageGroups = ['10-14', '15-19', '20-49'];
+                $currentEnd = [];
+
+                foreach ($ageGroups as $ageGroup) {
+                    $current_user_beginning = $entriesModel->where([
+                        'barangay_code' => $barangay_code,
+                        'report_month'  => $report_month,
+                        'report_year'   => $report_year,
+                        'user_type'     => 'current_user_beginning',
+                        'agegroup'      => $ageGroup,
+                        'indicator_id'  => $indicatorId
+                    ])->first()['value'] ?? 0;
+
+                    $new_acceptor_previous = $entriesModel->where([
+                        'barangay_code' => $barangay_code,
+                        'report_month'  => $report_month,
+                        'report_year'   => $report_year,
+                        'user_type'     => 'new_acceptor_previous',
+                        'agegroup'      => $ageGroup,
+                        'indicator_id'  => $indicatorId
+                    ])->first()['value'] ?? 0;
+
+                    $other_acceptor_present = $entriesModel->where([
+                        'barangay_code' => $barangay_code,
+                        'report_month'  => $report_month,
+                        'report_year'   => $report_year,
+                        'user_type'     => 'other_acceptor_present',
+                        'agegroup'      => $ageGroup,
+                        'indicator_id'  => $indicatorId
+                    ])->first()['value'] ?? 0;
+
+                    $drop_outs = $entriesModel->where([
+                        'barangay_code' => $barangay_code,
+                        'report_month'  => $report_month,
+                        'report_year'   => $report_year,
+                        'user_type'     => 'drop_outs',
+                        'agegroup'      => $ageGroup,
+                        'indicator_id'  => $indicatorId
+                    ])->first()['value'] ?? 0;
+
+                    $new_acceptor_present = 0;
+                    if ($user_type === 'new_acceptor_present') {
+                        foreach ($entries as $entry) {
+                            if ($entry['agegroup'] === $ageGroup) {
+                                $new_acceptor_present = $entry['value'];
+                                break;
+                            }
+                        }
+                    }
+
+                    $currentEnd[$ageGroup] = $current_user_beginning + $new_acceptor_previous + $other_acceptor_present + $new_acceptor_present - $drop_outs;
+                }
+
+                // Step 2: Determine next month & year
+                $nextMonth = $report_month == 12 ? 1 : $report_month + 1;
+                $nextYear  = $report_month == 12 ? $report_year + 1 : $report_year;
+
+                // Step 3: Insert/update next month's current_user_beginning
+                foreach ($ageGroups as $ageGroup) {
+                    $existingNextMonth = $entriesModel->where([
+                        'barangay_code' => $barangay_code,
+                        'report_month'  => $nextMonth,
+                        'report_year'   => $nextYear,
+                        'agegroup'      => $ageGroup,
+                        'user_type'     => 'current_user_beginning',
+                        'indicator_id'  => $indicatorId,
+                    ])->first();
+
+                    if ($existingNextMonth) {
+                        $entriesModel->update($existingNextMonth['id'], [
+                            'value' => $currentEnd[$ageGroup],
+                            'updated_at' => date('Y-m-d H:i:s')
+                        ]);
+                    } else {
+                        $entriesModel->insert([
+                            'section_code'  => $code,
+                            'indicator_id'  => $indicatorId,
+                            'barangay_code' => $barangay_code,
+                            'report_month'  => $nextMonth,
+                            'report_year'   => $nextYear,
+                            'agegroup'      => $ageGroup,
+                            'user_type'     => 'current_user_beginning',
+                            'value'         => $currentEnd[$ageGroup],
+                            'created_at'    => date('Y-m-d H:i:s'),
+                            'updated_at'    => date('Y-m-d H:i:s')
+                        ]);
+                    }
+                }
+            }
         }
 
         return $this->response->setJSON([

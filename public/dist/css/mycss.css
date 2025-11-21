@@ -31,7 +31,11 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-
+input:read-only {
+    background-color: #d9d9d9;
+    pointer-events: none;
+    /* Or any other desired color */
+}
 
 
 /* Full-screen overlay for the loader */
@@ -42,7 +46,8 @@ input[type=number] {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8); /* ✅ black with 60% opacity */
+    background: rgba(0, 0, 0, 0.8);
+    /* ✅ black with 60% opacity */
     z-index: 9999;
     text-align: center;
     color: #1b4332;
